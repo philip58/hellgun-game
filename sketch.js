@@ -1,9 +1,15 @@
 //player variable(s)
 let player;
 let canDodge = true;
-
+let arm;
 //floor variables(s)
 let floor;
+
+//animation variables
+let idleAni;
+let walkAni;
+
+
 
 //set up function
 function setup(){
@@ -14,9 +20,18 @@ function setup(){
     world.gravity.y = 10;
 
     //initialize player
-    player = new Sprite(0,0,256/4,512/4);
-    player.collider = "dynamic";
+    player = new Sprite(0,0,256/7,200); //hitbox?
+    player.collider = "dynamic";   
     
+    
+    //player arm
+    arm = new Sprite(player.x,player.y,20,20);
+    arm.collider ="none";
+    arm.img = 'assets/arm.png';
+    //player animations    
+    player.addAni('idle', 'assets/idle.png',{frameSize: [256,256], frames: 30});
+    player.addAni('walkForward', 'assets/walkForward.png',{frameSize: [256,256], frames: 30});
+
     //initialize floor
     floor = new Sprite(600,400,2000,300);
     floor.collider = "static";
@@ -25,7 +40,17 @@ function setup(){
 
 //draw function
 function draw(){
+    clear();
     background(150);
+
+//player hitbox debug (shows hitbox on LMB click)
+player.debug = mouse.pressing();
+arm.debug = mouse.pressing();
+
+//Player Arm
+
+arm.x = player.x + 12;
+arm.y = player.y - 17;
 
     //adjust camera to follow player
     camera.x = player.x+600;
@@ -68,5 +93,27 @@ function draw(){
         }
 
     }  
+
+
+    //aiming
+    //flipping player model based on mouse orientation
+    if (mouse.x > player.x){
+        player.mirror.x = false;
+    } else if (mouse.x < player.x)
+    player.mirror.x = true;
+
+    //animations
+    player.anis.offset.y=-29;
+    player.anis.offset.x=10;
+
+
+    if (kb.pressing('left')) {
+		player.changeAni('walkForward');
+	} else if (kb.pressing('right')) {
+		player.changeAni('walkForward');
+	} else {
+                //play idle animation if movement stops
+		player.changeAni('idle');
+	}
 
 }
