@@ -9,7 +9,9 @@ let floor;
 let idleAni;
 let walkAni;
 
-
+//projectile variables
+let projectile;
+let projectiles = [];
 
 //set up function
 function setup(){
@@ -43,14 +45,14 @@ function draw(){
     clear();
     background(150);
 
-//player hitbox debug (shows hitbox on LMB click)
-player.debug = mouse.pressing();
-arm.debug = mouse.pressing();
+    //player hitbox debug (shows hitbox on LMB click)
+    player.debug = mouse.pressing();
+    arm.debug = mouse.pressing();
 
-//Player Arm
+    //Player Arm
 
-arm.x = player.x + 12;
-arm.y = player.y - 17;
+    arm.x = player.x + 12;
+    arm.y = player.y - 17;
 
     //adjust camera to follow player
     camera.x = player.x+600;
@@ -96,11 +98,15 @@ arm.y = player.y - 17;
 
 
     //aiming
-    //flipping player model based on mouse orientation
+    //flipping player and arm model based on mouse orientation
     if (mouse.x > player.x){
         player.mirror.x = false;
-    } else if (mouse.x < player.x)
-    player.mirror.x = true;
+        arm.mirror.x = false;
+    } else if (mouse.x < player.x){
+        player.mirror.x = true;
+        arm.mirror.x = true;
+        arm.x-=25;
+    }
 
     //animations
     player.anis.offset.y=-29;
@@ -112,8 +118,31 @@ arm.y = player.y - 17;
 	} else if (kb.pressing('right')) {
 		player.changeAni('walkForward');
 	} else {
-                //play idle animation if movement stops
+    //play idle animation if movement stops
 		player.changeAni('idle');
 	}
+
+    //shooting wherever mouse is clicked
+    if(mouse.presses() && !player.mouse.hovering() && (mouse.x > player.x+80 || mouse.x < player.x-80)){
+        if (mouse.x > player.x){
+            projectile = new Sprite(player.x+80, player.y-30, 25);
+        } else{
+            projectile = new Sprite(player.x-80, player.y-30, 25);
+
+        }
+        projectile.mass = 0;
+        projectiles.push(projectile);
+        projectile.moveTowards(mouse.x,mouse.y,75);
+    }
+
+    //check for projectile collisions 
+    for(let i = 0; i < projectiles.length; i++){
+        if(projectiles[i].y<-650 || projectiles[i].y>=750){
+            projectiles[i].remove();
+        } 
+        if(projectiles[i].collides(floor)){
+            projectiles[i].remove();
+        }
+    }
 
 }
