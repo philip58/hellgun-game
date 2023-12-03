@@ -20,7 +20,7 @@ function setup(){
     world.gravity.y = 10;
 
     //initialize player
-    player = new Sprite(0,0,256/7,200); //hitbox?
+    player = new Sprite(0,0,256/7,195); //hitbox?
     player.collider = "dynamic";   
     
     
@@ -30,7 +30,7 @@ function setup(){
     arm.img = 'assets/arm.png';
     //player animations    
     player.addAni('idle', 'assets/idle.png',{frameSize: [256,256], frames: 30});
-    player.addAni('walkForward', 'assets/walkForward.png',{frameSize: [256,256], frames: 30});
+    player.addAni('walkForward', 'assets/walkForward.png',{frameSize: [256,256], frames: 15});
 
     //initialize floor
     floor = new Sprite(600,400,2000,300);
@@ -102,9 +102,9 @@ arm.y = player.y - 17;
     } else if (mouse.x < player.x)
     player.mirror.x = true;
 
-    //animations
-    player.anis.offset.y=-29;
-    player.anis.offset.x=10;
+        //animations
+        player.anis.offset.y=-25;
+        player.anis.offset.x=10;
 
 
     if (kb.pressing('left')) {
