@@ -20,6 +20,9 @@ let shakeScreen = false;
 //game variables
 let playerIsDead = false;
 let showDeathScreen = false;
+let introText1;
+let introText2;
+let introText3;
 
 //respawn the player at start point function
 function respawnPlayer(){
@@ -42,6 +45,29 @@ function setup(){
     noStroke();
     rectMode(CENTER);
     world.gravity.y = 10;
+
+    //game instructions/introduction
+    introText1 = new Sprite(500,-450);
+    introText1.collider = "none";
+    introText1.text = "Point And Click To Shoot";
+    introText1.textSize = 75;
+    introText1.color = 150;
+    introText1.stroke = 150;
+
+    introText2 = new Sprite(150,-200);
+    introText2.collider = "none";
+    introText2.text = "A and D To Move";
+    introText2.textSize = 75;
+    introText2.color = 150;
+    introText2.stroke = 150;
+
+    introText3 = new Sprite(850,-200);
+    introText3.collider = "none";
+    introText3.text = "W To Jump";
+    introText3.textSize = 75;
+    introText3.color = 150;
+    introText3.stroke = 150;
+
     //initialize player
     player = new Sprite(0,0,256/7,200); //hitbox?
     player.collider = "dynamic";   
@@ -122,6 +148,10 @@ function draw(){
 
     //check if player is dead
     if(!playerIsDead){
+        -450, -200, -200
+        introText1.y = -450;
+        introText2.y = -200;
+        introText3.y = -200;
         //handling jumping 
         if(player.colliding(floor) && kb.pressing('up')){
             //jump only when touching floor
@@ -188,12 +218,6 @@ function draw(){
 
         //shooting wherever mouse is clicked
         if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
-            // if (mouse.x > player.x){
-            //     projectile = new Sprite(player.x+80, player.y-30, 25);
-            // } else{
-            //     projectile = new Sprite(player.x-80, player.y-30, 25);
-
-            // }
             if (mouse.x > player.x){
                 projectile = new Sprite(arm.x+80,arm.y-10,25);
             } else{
@@ -214,6 +238,10 @@ function draw(){
                 projectiles[i].remove();
             }
         }
+    } else {
+        introText1.y = 2000;
+        introText2.y = 2000;
+        introText3.y = 2000;
     }
 
 }
