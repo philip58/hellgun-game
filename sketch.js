@@ -6,9 +6,6 @@ let arm;
 //floor variables(s)
 let floor;
 
-//animation variables
-let idleAni;
-let walkAni;
 
 //projectile variables
 let projectile;
@@ -38,6 +35,12 @@ function respawnPlayer(){
     showDeathScreen = false;
 }
 
+//sounds
+function preload() {
+    revShot = loadSound('assets/revShot.wav');
+
+  }
+
 //set up function
 function setup(){
     //set up canvas and world settings
@@ -51,25 +54,25 @@ function setup(){
     introText1.collider = "none";
     introText1.text = "Point And Click To Shoot";
     introText1.textSize = 75;
-    introText1.color = 150;
-    introText1.stroke = 150;
+    introText1.color = 50;
+    introText1.stroke = 50;
 
     introText2 = new Sprite(150,-200);
     introText2.collider = "none";
     introText2.text = "A and D To Move";
     introText2.textSize = 75;
-    introText2.color = 150;
-    introText2.stroke = 150;
+    introText2.color = 50;
+    introText2.stroke = 50;
 
     introText3 = new Sprite(850,-200);
     introText3.collider = "none";
     introText3.text = "W To Jump";
     introText3.textSize = 75;
-    introText3.color = 150;
-    introText3.stroke = 150;
+    introText3.color = 50;
+    introText3.stroke = 50;
 
     //initialize player
-    player = new Sprite(0,0,256/7,200); //hitbox?
+    player = new Sprite(0,200,256/7,200); //hitbox?
     player.collider = "dynamic";   
     player.rotationLock = true;
     player.bounciness = 0;
@@ -80,8 +83,18 @@ function setup(){
     arm.collider ="dynamic";
     arm.img = 'assets/arm.png';
     //player animations    
+    player.addAni('walkForward', 'assets/walkForward.png',{frameSize: [256,256], frames: 15});
     player.addAni('idle', 'assets/idle.png',{frameSize: [256,256], frames: 30});
-    player.addAni('walkForward', 'assets/walkForward.png',{frameSize: [256,256], frames: 30});
+
+    player.addAni('roll', 'assets/roll.png',{frameSize: [256,256], frames: 18});
+    player.addAni('jump', 'assets/jump.png',{frameSize: [256,256], frames: 90});
+    arm.addAni('revShot', 'assets/revShot.png',{frameSize: [256,256], frames: 9});
+    arm.addAni('revIdle', 'assets/revShot.png',{frameSize: [256,256], frames: 1});
+
+    arm.anis.frameDelay = -80;
+
+
+
 
     //initialize floor
     floor = new Sprite(600,400,2000,300);
@@ -105,7 +118,7 @@ function stopShakingScreen(){
 //draw function
 function draw(){
     clear();
-    background(150);
+    background(50);
 
     // //player hitbox debug (shows hitbox on LMB click)
     // player.debug = mouse.pressing();
@@ -143,8 +156,8 @@ function draw(){
     }
 
     //Player Arm
-    arm.x = player.x + 12;
-    arm.y = player.y - 17;
+    arm.x = player.x + 2;
+    arm.y = player.y - 53;
 
     //check if player is dead
     if(!playerIsDead){
@@ -169,6 +182,7 @@ function draw(){
 
         //dodge left and right mechanic
         if(canDodge && kb.presses('down') ) {
+            player.changeAni(['roll','idle']);
             if(kb.pressing('left')){
                 player.x = player.x - 300;
                 console.log("dodge left");
@@ -176,6 +190,7 @@ function draw(){
                 setTimeout(() => {
                     canDodge = true;
                 }, 1000);
+                player.changeAni(['roll','idle']);
             }
             if(kb.pressing('right')){
                 player.x = player.x + 300;
@@ -184,6 +199,8 @@ function draw(){
                 setTimeout(() => {
                     canDodge = true;
                 }, 1000);
+                player.changeAni(['roll','idle']);
+
             }
 
         }  
@@ -194,19 +211,28 @@ function draw(){
         if (mouse.x > player.x){
             player.mirror.x = false;
             arm.mirror.x = false;
-            arm.rotation = mouse.y/75;
+            arm.rotation = mouse.y/8;
         } else if (mouse.x < player.x){
             player.mirror.x = true;
             arm.mirror.x = true;
-            arm.x-=25;
-            arm.rotation = -mouse.y/75;
+            arm.x-=0;
+            arm.rotation = -mouse.y/8;
         }
 
         //animations
         player.anis.offset.y=-29;
         player.anis.offset.x=10;
 
+    if(canDodge && kb.presses('down')) {
+        player.changeAni('roll');
+        if(kb.pressing('left')){
+            player.changeAni('roll'); }
+        if(kb.pressing('right')){
+            player.changeAni('roll');
+        }
+    }
 
+        if(player.ani.name != 'roll'){     
         if (kb.pressing('left')) {
             player.changeAni('walkForward');
         } else if (kb.pressing('right')) {
@@ -215,13 +241,28 @@ function draw(){
         //play idle animation if movement stops
             player.changeAni('idle');
         }
+        if(player.colliding(floor) == false){
+            player.changeAni('jump');
+        }
+    }
 
+        //gun animations // add extra if statement for gun type
+
+   
         //shooting wherever mouse is clicked
         if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
             if (mouse.x > player.x){
-                projectile = new Sprite(arm.x+80,arm.y-10,25);
+                projectile = new Sprite(arm.x+80,arm.y+50,25);
+                projectile.img = 'assets/bullet.png'
+                projectile.rotation = mouse.y/8;         
+                arm.changeAni(['revShot','revIdle']);  
+                revShot.play(0,1,0.2);
             } else{
-                projectile = new Sprite(arm.x-80,arm.y-10,25);
+                projectile = new Sprite(arm.x-80,arm.y+50,25);
+                projectile.img = 'assets/bullet.png'
+                projectile.rotation = -mouse.y/8;
+                arm.changeAni(['revShot','revIdle']);  
+                revShot.play(0,1,0.2);
             }
             projectile.mass = 0;
             projectiles.push(projectile);
