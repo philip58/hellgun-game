@@ -13,6 +13,9 @@ let walkAni;
 let projectile;
 let projectiles = [];
 
+//camera variable(s)
+let shakeScreen = false;
+
 //set up function
 function setup(){
     //set up canvas and world settings
@@ -24,6 +27,8 @@ function setup(){
     //initialize player
     player = new Sprite(0,0,256/7,200); //hitbox?
     player.collider = "dynamic";   
+    player.rotationLock = true;
+    player.bounciness = 0;
     
     
     //player arm
@@ -40,23 +45,43 @@ function setup(){
 
 }
 
+function moveCamera(){
+    camera.x = random(player.x+597,player.x+604);
+    camera.y = random(player.y-247,player.y-254);
+}
+
+function shakeTheScreen(){
+    shakeScreen = true;
+    setTimeout(stopShakingScreen,100);
+}
+
+function stopShakingScreen(){
+    shakeScreen = false;
+}
+
 //draw function
 function draw(){
     clear();
     background(150);
 
-    //player hitbox debug (shows hitbox on LMB click)
-    player.debug = mouse.pressing();
-    arm.debug = mouse.pressing();
+    // //player hitbox debug (shows hitbox on LMB click)
+    // player.debug = mouse.pressing();
+    // arm.debug = mouse.pressing();
 
     //Player Arm
 
     arm.x = player.x + 12;
     arm.y = player.y - 17;
 
+    //shake the screen
+    //shake the camera when true
+    if(shakeScreen){
+        moveCamera();
+    } else{
+        camera.x = player.x+600;
+        camera.y = player.y-250;
+    }
     //adjust camera to follow player
-    camera.x = player.x+600;
-    camera.y = player.y-250;
 
     player.rotation = 0;
 
@@ -133,6 +158,7 @@ function draw(){
         projectile.mass = 0;
         projectiles.push(projectile);
         projectile.moveTowards(mouse.x,mouse.y,75);
+        shakeTheScreen();
     }
 
     //check for projectile collisions 
