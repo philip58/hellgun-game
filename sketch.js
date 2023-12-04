@@ -20,7 +20,8 @@ let showDeathScreen = false;
 let introText1;
 let introText2;
 let introText3;
-
+//Player stats (HP, roll speed, current gun, etc.)
+let playerSpeed = 7;
 //respawn the player at start point function
 function respawnPlayer(){
     //delete floating objects if existing
@@ -82,6 +83,7 @@ function setup(){
     arm = new Sprite(player.x,player.y,20,20);
     arm.collider ="dynamic";
     arm.img = 'assets/arm.png';
+    arm.overlaps(player);
     //player animations    
     player.addAni('walkForward', 'assets/walkForward.png',{frameSize: [256,256], frames: 15});
     player.addAni('idle', 'assets/idle.png',{frameSize: [256,256], frames: 30});
@@ -114,6 +116,8 @@ function shakeTheScreen(){
 function stopShakingScreen(){
     shakeScreen = false;
 }
+
+
 
 //draw function
 function draw(){
@@ -173,9 +177,9 @@ function draw(){
 
         //handling movement
         if (kb.pressing('left')) {
-            player.vel.x = -7;
+            player.vel.x = -playerSpeed;
         } else if (kb.pressing('right')) {
-            player.vel.x = 7; 
+            player.vel.x = playerSpeed; 
         } else {
             player.vel.x = 0;
         } 
@@ -183,40 +187,35 @@ function draw(){
         //dodge left and right mechanic
         if(canDodge && kb.presses('down') ) {
             player.changeAni(['roll','idle']);
-            if(kb.pressing('left')){
-                player.x = player.x - 300;
-                console.log("dodge left");
+                console.log("dodge");
                 canDodge = false;
+             
+                //after roll
                 setTimeout(() => {
-                    canDodge = true;
-                }, 1000);
-                player.changeAni(['roll','idle']);
-            }
-            if(kb.pressing('right')){
-                player.x = player.x + 300;
-                console.log("dodge right");
-                canDodge = false;
-                setTimeout(() => {
-                    canDodge = true;
-                }, 1000);
-                player.changeAni(['roll','idle']);
+                    canDodge = true;          
+                    arm.scale = 1;
+                    playerSpeed = 7;
 
-            }
+                }, 1200);
 
-        }  
-
+            //during roll
+            playerSpeed = 15;
+            arm.scale = 0;
+        } 
 
         //aiming
         //flipping player and arm model based on mouse orientation
         if (mouse.x > player.x){
             player.mirror.x = false;
             arm.mirror.x = false;
-            arm.rotation = mouse.y/8;
+            arm.rotation = (mouse.y/8) - 20
         } else if (mouse.x < player.x){
             player.mirror.x = true;
             arm.mirror.x = true;
             arm.x-=0;
-            arm.rotation = -mouse.y/8;
+            arm.rotation = -mouse.y/8 + 20
+
+
         }
 
         //animations
@@ -250,17 +249,18 @@ function draw(){
 
    
         //shooting wherever mouse is clicked
+        if(player.ani.name != 'roll'){
         if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
             if (mouse.x > player.x){
                 projectile = new Sprite(arm.x+80,arm.y+50,25);
                 projectile.img = 'assets/bullet.png'
-                projectile.rotation = mouse.y/8;         
+                projectile.rotation = mouse.y/8+20;         
                 arm.changeAni(['revShot','revIdle']);  
                 revShot.play(0,1,0.2);
             } else{
                 projectile = new Sprite(arm.x-80,arm.y+50,25);
                 projectile.img = 'assets/bullet.png'
-                projectile.rotation = -mouse.y/8;
+                projectile.rotation = -mouse.y/8+20;
                 arm.changeAni(['revShot','revIdle']);  
                 revShot.play(0,1,0.2);
             }
@@ -269,7 +269,7 @@ function draw(){
             projectile.moveTowards(mouse.x,mouse.y,75);
             shakeTheScreen();
         }
-
+    }
         //check for projectile collisions 
         for(let i = 0; i < projectiles.length; i++){
             if(projectiles[i].y<-650 || projectiles[i].y>=750){
