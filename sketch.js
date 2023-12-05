@@ -385,7 +385,7 @@ text("Health: " + playerHealth, 100,100);
     }
 
     //spawn in enemy when player reaches checkpoint
-    if(player.x > 4000 && !enemySpawned){
+    if(player.x > 3000 && !enemySpawned){
         enemyText1 = new Sprite(4500,-450);
         enemyText1.collider = "none";
         enemyText1.text = "Jump Over Bullets With W Or Dodge Them With S";
@@ -442,7 +442,7 @@ text("Health: " + playerHealth, 100,100);
         }
 
         //enemy shoots at player when in distance 
-        if((startingEnemy.x - player.x <= 500 || startingEnemy.x - player.x >= -500) && enemyCanShoot && !gameWon){
+        if(startingEnemy.x - player.x <= 1000 && enemyCanShoot && !gameWon){
             enemyProjectile = new Sprite(startingEnemy.x-80,startingEnemy.y-50,25)
             enemyProjectile.img = 'assets/bullet.png';
             enemyProjectile.mirror.x = true;
@@ -472,8 +472,12 @@ text("Health: " + playerHealth, 100,100);
             if(enemyProjectiles[i].collides(player)){
                 if(player.ani.name === 'roll'){
                     player.collider = "none";
+                    arm.collider = "none";
+                    enemyProjectiles[i].x = player.x - 100;
+                    enemyProjectiles[i].vel.x = -50; 
                 } else {
                     player.collider = "dynamic";
+                    arm.collider = "dynamic";
                     shakeTheScreen();
                     enemyProjectiles[i].remove();
                     if(playerHealth <= 0){
