@@ -6,6 +6,11 @@ let arm;
 //floor variables(s)
 let floor;
 
+//gun variables
+let gunText1;
+let gunText2;
+let revolver;
+let revolverEquipped = false;
 
 //projectile variables
 let projectile;
@@ -20,8 +25,14 @@ let showDeathScreen = false;
 let introText1;
 let introText2;
 let introText3;
+let revolverSpawned = false;
 //Player stats (HP, roll speed, current gun, etc.)
 let playerSpeed = 7;
+
+//enemy variables
+let startingEnemy;
+let enemySpawned;
+
 //respawn the player at start point function
 function respawnPlayer(){
     //delete floating objects if existing
@@ -95,12 +106,10 @@ function setup(){
 
     arm.anis.frameDelay = -80;
 
-
-
-
     //initialize floor
-    floor = new Sprite(600,400,2000,300);
+    floor = new Sprite(2000,400,6000,300);
     floor.collider = "static";
+    floor.bounciness = 0;
 }
 
 function moveCamera(){
@@ -250,28 +259,43 @@ function draw(){
    
         //shooting wherever mouse is clicked
         if(player.ani.name != 'roll'){
-        if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
-            if (mouse.x > player.x){
-                projectile = new Sprite(arm.x+80,arm.y+50,25);
-                projectile.img = 'assets/bullet.png'
-                projectile.rotation = mouse.y/8+20;         
-                arm.changeAni(['revShot','revIdle']);  
-                revShot.play(0,1,0.2);
-            } else{
-                projectile = new Sprite(arm.x-80,arm.y+50,25);
-                projectile.img = 'assets/bullet.png'
-                projectile.rotation = -mouse.y/8+20;
-                arm.changeAni(['revShot','revIdle']);  
-                revShot.play(0,1,0.2);
+            if(revolverEquipped){
+                if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
+                    if (mouse.x > player.x){
+                        projectile = new Sprite(arm.x+80,arm.y+50,25);
+                        projectile.img = 'assets/bullet.png'
+                        projectile.rotation = mouse.y/8+20;         
+                        arm.changeAni(['revShot','revIdle']);  
+                        revShot.play(0,1,0.2);
+                    } else{
+                        projectile = new Sprite(arm.x-80,arm.y+50,25);
+                        projectile.img = 'assets/bullet.png'
+                        projectile.rotation = -mouse.y/8+20;
+                        arm.changeAni(['revShot','revIdle']);  
+                        revShot.play(0,1,0.2);
+                    }
+                    projectile.mass = 0;
+                    projectiles.push(projectile);
+                    projectile.moveTowards(mouse.x,mouse.y,75);
+                    shakeTheScreen();
+                }
             }
-            projectile.mass = 0;
-            projectiles.push(projectile);
-            projectile.moveTowards(mouse.x,mouse.y,75);
-            shakeTheScreen();
-        }
     }
         //check for projectile collisions 
         for(let i = 0; i < projectiles.length; i++){
+            if(enemySpawned){
+                if(projectiles[i].collides(startingEnemy)){
+                    startingEnemy.remove();
+                    enemyText1.remove();
+                    enemyText2.remove();
+                    let winText = new Sprite(4750,-350);
+                    winText.text = "CONGRATS, YOU WIN!!!";
+                    winText.collider = "none";
+                    winText.textSize = 100;
+                    winText.color = 50;
+                    winText.stroke = 50;
+                }
+            }
             if(projectiles[i].y<-650 || projectiles[i].y>=750){
                 projectiles[i].remove();
             } 
@@ -284,5 +308,71 @@ function draw(){
         introText2.y = 2000;
         introText3.y = 2000;
     }
+
+    //spawn revolver when passing a checkpoint
+    if(player.x > 2000 && !revolverSpawned){
+        gunText1 = new Sprite(2700,-450);
+        gunText1.collider = "none";
+        gunText1.text = "This Is Your Gun";
+        gunText1.textSize = 75;
+        gunText1.color = 50;
+        gunText1.stroke = 50;
+
+        gunText2 = new Sprite(2700,-250);
+        gunText2.collider = "none";
+        gunText2.text = "Click Right Click To Pick It Up";
+        gunText2.textSize = 75;
+        gunText2.color = 50;
+        gunText2.stroke = 50;
+
+        revolver = new Sprite(3000,100);
+        revolver.img = "assets/revolver.png";
+        revolver.width = 100;
+        revolver.height = 50;
+        revolverSpawned = true;
+    }
+
+    //check if revolver spawned in
+    if(revolverSpawned){
+        //make revolver unable to move
+        if(player.colliding(revolver)){
+            revolver.collider = "none";
+        } else {
+            revolver.collider = "dynamic";
+        }
+        
+        //right click revolver to pick it up 
+        if(revolver.mouse.hovering() && mouse.right > 1 && mouse.right < 10){
+            revolverEquipped = true;
+            revolver.remove();
+        }
+    }
+
+    //spawn in enemy when player reaches checkpoint
+    if(player.x > 4000 && !enemySpawned){
+        enemyText1 = new Sprite(4500,-450);
+        enemyText1.collider = "none";
+        enemyText1.text = "This Is An Enemy";
+        enemyText1.textSize = 75;
+        enemyText1.color = 50;
+        gunText1.stroke = 50;
+
+        enemyText2 = new Sprite(4500,-250);
+        enemyText2.collider = "none";
+        enemyText2.text = "Aim At Enemy And Shoot It To Win";
+        enemyText2.textSize = 75;
+        enemyText2.color = 50;
+        enemyText2.stroke = 50;
+
+        startingEnemy = new Sprite(4900,100);
+        startingEnemy.rotationLock = true;
+        startingEnemy.collider = "dynamic";
+        startingEnemy.width = 256/7;
+        startingEnemy.height = 200;
+        enemySpawned = true;
+    }
+    
+    //enemy collision
+    
 
 }
