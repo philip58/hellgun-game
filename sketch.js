@@ -61,6 +61,7 @@ function respawnPlayer(){
     revolverEquipped = false;
     enemySpawned = false;
     gameWon = false;
+    arm.img = "assets/Arm.png";
 }
 
 //sounds
@@ -405,6 +406,7 @@ text("Health: " + playerHealth, 100,100);
         startingEnemy.addAni('shootUp','assets/revEnemyShootUp.png',{frameSize:[256,256], frames: 9});
         startingEnemy.addAni('idle','assets/revEnemy.png',{frameSize:[256,256], frames: 30});
         startingEnemy.addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});
+        startingEnemy.addAni('dead','assets/tombstone2.png',{frameSize:[256,256], frames: 1});
 
 
         startingEnemy.rotationLock = true;
@@ -442,21 +444,21 @@ text("Health: " + playerHealth, 100,100);
         }
 
         //enemy shoots at player when in distance 
-        if(startingEnemy.x - player.x <= 1000 && enemyCanShoot && !gameWon){
+        if(startingEnemy.x - player.x <= 1600 && enemyCanShoot && !gameWon){
             enemyProjectile = new Sprite(startingEnemy.x-80,startingEnemy.y-50,25)
             enemyProjectile.img = 'assets/bullet.png';
             enemyProjectile.mirror.x = true;
             revShot.play(0,1,0.2);
             enemyProjectile.mass = 0;
             enemyProjectiles.push(enemyProjectile);
-            if(player.colliding(floor)){
+            // if(player.colliding(floor)){
                 startingEnemy.changeAni(['shoot','idle']);  
 
-                enemyProjectile.moveTo(-1000,200,50);
-            } else {
-                startingEnemy.changeAni(['shootUp','idleUp']);  
-                enemyProjectile.moveTo(-500,-1000,50);
-             }
+                enemyProjectile.moveTo(-1500,200,50);
+            // } else {
+            //     startingEnemy.changeAni(['shootUp','idleUp']);  
+            //     enemyProjectile.moveTo(-500,-1000,50);
+            //  }
             
             enemyCanShoot = false;
             
@@ -500,9 +502,5 @@ text("Health: " + playerHealth, 100,100);
     }
 
     player.collider = "dynamic";
-
-
-
-
 
 }
