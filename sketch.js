@@ -1,7 +1,11 @@
 //player variable(s)
+//Player stats (HP, roll speed, current gun, etc.)
 let player;
 let canDodge = true;
 let arm;
+let playerSpeed = 7;
+let playerHealth = 3;
+let currentGun = "";
 
 //floor variables(s)
 let floor;
@@ -12,9 +16,14 @@ let gunText2;
 let revolver;
 let revolverEquipped = false;
 
-//projectile variables
+//player projectile variables
 let projectile;
 let projectiles = [];
+
+//enemy projectile variables
+let enemyProjectile;
+let enemyProjectiles = [];
+let enemyCanShoot = true;
 
 //camera variable(s)
 let shakeScreen = false;
@@ -26,8 +35,8 @@ let introText1;
 let introText2;
 let introText3;
 let revolverSpawned = false;
-//Player stats (HP, roll speed, current gun, etc.)
-let playerSpeed = 7;
+let gameWon = false;
+let winText;
 
 //enemy variables
 let startingEnemy;
@@ -45,6 +54,10 @@ function respawnPlayer(){
 
     playerIsDead = false;
     showDeathScreen = false;
+    revolverSpawned = false;
+    revolverEquipped = false;
+    enemySpawned = false;
+    gameWon = false;
 }
 
 //sounds
@@ -64,7 +77,7 @@ function setup(){
     //game instructions/introduction
     introText1 = new Sprite(500,-450);
     introText1.collider = "none";
-    introText1.text = "Point And Click To Shoot";
+    introText1.text = "Welcome To Hellgun";
     introText1.textSize = 75;
     introText1.color = 50;
     introText1.stroke = 50;
@@ -145,6 +158,7 @@ function draw(){
         if(player.y > 1080/2+200 || playerIsDead){
             //handle player death
             playerIsDead = true;
+            gameWon = false;
             setTimeout(() => {
                 //reset camera when player falls off level
                 camera.x = 600;
@@ -157,15 +171,17 @@ function draw(){
                 textSize(75);
                 text("Press R To Restart",600,250);
             }   
-            if(kb.presses("r")){
-                respawnPlayer();
-            }
         } else{
             //adjust camera to follow player
             camera.x = player.x+600;
             camera.y = player.y-250;
             
         }
+    }
+
+    //respawn/restart
+    if(kb.presses("r")){
+        respawnPlayer();
     }
 
     //Player Arm
@@ -223,8 +239,6 @@ function draw(){
             arm.mirror.x = true;
             arm.x-=0;
             arm.rotation = -mouse.y/8 + 20
-
-
         }
 
         //animations
@@ -285,15 +299,11 @@ function draw(){
         for(let i = 0; i < projectiles.length; i++){
             if(enemySpawned){
                 if(projectiles[i].collides(startingEnemy)){
+                    projectiles[i].remove();
                     startingEnemy.remove();
                     enemyText1.remove();
                     enemyText2.remove();
-                    let winText = new Sprite(4750,-350);
-                    winText.text = "CONGRATS, YOU WIN!!!";
-                    winText.collider = "none";
-                    winText.textSize = 100;
-                    winText.color = 50;
-                    winText.stroke = 50;
+                    gameWon = true;
                 }
             }
             if(projectiles[i].y<-650 || projectiles[i].y>=750){
@@ -309,27 +319,33 @@ function draw(){
         introText3.y = 2000;
     }
 
+    //display text if game is won
+    if(gameWon){
+        textSize(75);
+        text("CONGRATS YOU WON!!!", 500,150);
+    }
+
     //spawn revolver when passing a checkpoint
     if(player.x > 2000 && !revolverSpawned){
         gunText1 = new Sprite(2700,-450);
         gunText1.collider = "none";
-        gunText1.text = "This Is Your Gun";
+        gunText1.text = "Right Click To Pick It Up";
         gunText1.textSize = 75;
         gunText1.color = 50;
         gunText1.stroke = 50;
 
         gunText2 = new Sprite(2700,-250);
         gunText2.collider = "none";
-        gunText2.text = "Click Right Click To Pick It Up";
+        gunText2.text = "Left Click To Shoot";
         gunText2.textSize = 75;
         gunText2.color = 50;
         gunText2.stroke = 50;
 
+        revolverSpawned = true;
         revolver = new Sprite(3000,100);
         revolver.img = "assets/revolver.png";
         revolver.width = 100;
         revolver.height = 50;
-        revolverSpawned = true;
     }
 
     //check if revolver spawned in
@@ -352,14 +368,14 @@ function draw(){
     if(player.x > 4000 && !enemySpawned){
         enemyText1 = new Sprite(4500,-450);
         enemyText1.collider = "none";
-        enemyText1.text = "This Is An Enemy";
+        enemyText1.text = "Jump Over Bullets With W Or Dodge Them With S";
         enemyText1.textSize = 75;
         enemyText1.color = 50;
-        gunText1.stroke = 50;
+        enemyText1.stroke = 50;
 
         enemyText2 = new Sprite(4500,-250);
         enemyText2.collider = "none";
-        enemyText2.text = "Aim At Enemy And Shoot It To Win";
+        enemyText2.text = "Aim At The Enemy And Shoot It To Win";
         enemyText2.textSize = 75;
         enemyText2.color = 50;
         enemyText2.stroke = 50;
@@ -371,8 +387,64 @@ function draw(){
         startingEnemy.height = 200;
         enemySpawned = true;
     }
+
+    //check if enemy spawned in
+    if(enemySpawned){
+        //make enemy unable to move
+        if(player.colliding(startingEnemy)){
+            startingEnemy.collider = "static";
+        } else {
+            startingEnemy.collider = "dynamic";
+        }
+
+        //enemy shoots at player when in distance 
+        if((startingEnemy.x - player.x <= 500 || startingEnemy.x - player.x >= -500) && enemyCanShoot && !gameWon){
+            enemyProjectile = new Sprite(startingEnemy.x-80,startingEnemy.y-50,25)
+            enemyProjectile.img = 'assets/bullet.png';
+            revShot.play(0,1,0.2);
+            enemyProjectile.mass = 0;
+            enemyProjectiles.push(enemyProjectile);
+            //if(player.colliding(floor)){
+                enemyProjectile.moveTo(-1000,200,50);
+            // } else {
+            //     enemyProjectile.moveTo(-500,-1000,50);
+            // }
+            
+            enemyCanShoot = false;
+            
+            setTimeout(() => {
+                enemyCanShoot = true;
+            }, 2000);
+        }
+    }
     
-    //enemy collision
-    
+    //enemy projectile collision handling
+    for(let i = 0; i < enemyProjectiles.length; i++){
+        if(enemySpawned){
+            if(enemyProjectiles[i].collides(player)){
+                if(player.ani.name === 'roll'){
+                    player.collider = "none";
+                } else {
+                    player.collider = "dynamic";
+                    shakeTheScreen();
+                    enemyProjectiles[i].remove();
+                    if(playerHealth <= 0){
+                        player.remove();
+                        playerIsDead = true;
+                    } else{
+                        playerHealth--;
+                    }
+                }
+            }
+        }
+        if(enemyProjectiles[i].y<-650 || enemyProjectiles[i].y>=750){
+            enemyProjectiles[i].remove();
+        } 
+        if(enemyProjectiles[i].collides(floor)){
+            enemyProjectiles[i].remove();
+        }
+    }
+
+    player.collider = "dynamic";
 
 }
