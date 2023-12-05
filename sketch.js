@@ -402,9 +402,9 @@ text("Health: " + playerHealth, 100,100);
 
         startingEnemy = new Sprite(4900,145);
         startingEnemy.addAni('shoot','assets/revEnemyShootLeft.png',{frameSize:[256,256], frames: 9});
-        startingEnemy.addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});
         startingEnemy.addAni('shootUp','assets/revEnemyShootUp.png',{frameSize:[256,256], frames: 9});
         startingEnemy.addAni('idle','assets/revEnemy.png',{frameSize:[256,256], frames: 30});
+        startingEnemy.addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});
 
 
         startingEnemy.rotationLock = true;
