@@ -299,13 +299,13 @@ text("Health: " + playerHealth, 100,100);
             if(revolverEquipped){
                 if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
                     if (mouse.x > player.x){
-                        projectile = new Sprite(arm.x+90,arm.y+20,25);
+                        projectile = new Sprite(arm.x+90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
                         //projectile.rotation = mouse.y/8+20;         
                         arm.changeAni(['revShot','revIdle']);  
                         revShot.play(0,1,0.2);
                     } else{
-                        projectile = new Sprite(arm.x-90,arm.y+20,25);
+                        projectile = new Sprite(arm.x-90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
                         //projectile.rotation = -mouse.y/8+20;
                         arm.changeAni(['revShot','revIdle']);  
