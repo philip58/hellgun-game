@@ -54,7 +54,7 @@ function respawnPlayer(){
 
     player.x = 256/7;
     player.y = 200;
-
+    arm.scale = 1;
     playerIsDead = false;
     showDeathScreen = false;
     revolverSpawned = false;
@@ -115,6 +115,8 @@ function setup(){
     arm.img = 'assets/arm.png';
     arm.overlaps(player);
     //player animations    
+    player.addAni('death', 'assets/death.png',{frameSize: [256,256], frames: 60});
+    player.addAni('deathDone', 'assets/deathDone.png',{frameSize: [256,256], frames: 1});
     player.addAni('walkForward', 'assets/walkForward.png',{frameSize: [256,256], frames: 15});
     player.addAni('idle', 'assets/idle.png',{frameSize: [256,256], frames: 30});
     player.addAni('roll', 'assets/roll.png',{frameSize: [256,256], frames: 18});
@@ -172,8 +174,8 @@ text("Health: " + playerHealth, 100,100);
             gameWon = false;
             setTimeout(() => {
                 //reset camera when player falls off level
-                camera.x = 600;
-                camera.y = -200;
+                //camera.x = 600;
+                //camera.y = -200;
                 showDeathScreen = true;
             }, 1000);
             if(showDeathScreen){
@@ -297,13 +299,13 @@ text("Health: " + playerHealth, 100,100);
             if(revolverEquipped){
                 if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
                     if (mouse.x > player.x){
-                        projectile = new Sprite(arm.x+90,arm.y+20,25);
+                        projectile = new Sprite(arm.x+90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
                         //projectile.rotation = mouse.y/8+20;         
                         arm.changeAni(['revShot','revIdle']);  
                         revShot.play(0,1,0.2);
                     } else{
-                        projectile = new Sprite(arm.x-90,arm.y+20,25);
+                        projectile = new Sprite(arm.x-90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
                         //projectile.rotation = -mouse.y/8+20;
                         arm.changeAni(['revShot','revIdle']);  
@@ -321,6 +323,7 @@ text("Health: " + playerHealth, 100,100);
             if(enemySpawned){
                 if(projectiles[i].collides(startingEnemy)){
                     killSound.play(0,1,0.5);
+                    startingEnemy.changeAni(['headshot','headshotDone']);  
                     projectiles[i].remove();
                     gameWon = true;
                     enemySpawned = false;
@@ -401,12 +404,14 @@ text("Health: " + playerHealth, 100,100);
         enemyText2.color = 50;
         enemyText2.stroke = 50;
 
-        startingEnemy = new Sprite(4900,145);
+        startingEnemy = new Sprite(4900,145);        
+        startingEnemy.addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
+        startingEnemy.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});
         startingEnemy.addAni('shoot','assets/revEnemyShootLeft.png',{frameSize:[256,256], frames: 9});
         startingEnemy.addAni('shootUp','assets/revEnemyShootUp.png',{frameSize:[256,256], frames: 9});
         startingEnemy.addAni('idle','assets/revEnemy.png',{frameSize:[256,256], frames: 30});
         startingEnemy.addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});
-        startingEnemy.addAni('dead','assets/tombstone2.png',{frameSize:[256,256], frames: 1});
+
 
 
         startingEnemy.rotationLock = true;
@@ -451,14 +456,14 @@ text("Health: " + playerHealth, 100,100);
             revShot.play(0,1,0.2);
             enemyProjectile.mass = 0;
             enemyProjectiles.push(enemyProjectile);
-            // if(player.colliding(floor)){
+             if(player.colliding(floor)){
                 startingEnemy.changeAni(['shoot','idle']);  
 
                 enemyProjectile.moveTo(-1500,200,50);
-            // } else {
-            //     startingEnemy.changeAni(['shootUp','idleUp']);  
-            //     enemyProjectile.moveTo(-500,-1000,50);
-            //  }
+             } else {
+                 startingEnemy.changeAni(['shootUp','idleUp']);  
+                 enemyProjectile.moveTo(-500,-1000,50);
+              }
             
             enemyCanShoot = false;
             
@@ -484,6 +489,8 @@ text("Health: " + playerHealth, 100,100);
                     enemyProjectiles[i].remove();
                     if(playerHealth <= 0){
                         damaged.play(0,1,0.5);
+                        arm.scale = 0;
+                        player.changeAni(['death', 'deathDone']);
                         playerIsDead = true;
                     } else{
                         playerHealth--;
