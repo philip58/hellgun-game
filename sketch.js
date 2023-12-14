@@ -172,6 +172,8 @@ function spawnEnemy(x,y){
     enemy.anis.offset.y=-20;
     enemy.anis.offset.x=0;
     enemy.mirror.x = true;  
+    enemy.canShoot = true;
+    enemy.isDead = false;
 
     //player cant push enemy
     arm.overlaps(enemy);
@@ -358,20 +360,23 @@ text("Health: " + playerHealth, 100,100);
     }
         //check for projectile collisions 
         for(let i = 0; i < projectiles.length; i++){
-            if(enemySpawned){
-                if(projectiles[i].collides(enemies[0])){
-                    killSound.play(0,1,0.5);
-                    enemies[0].changeAni(['headshot','headshotDone']);  
-                    projectiles[i].remove();
-                    gameWon = true;
-                    enemySpawned = false;
+            for(let j = 0; j < enemies.length; j++){
+                if(enemySpawned){
+                    if(projectiles[i].collides(enemies[j])){
+                        killSound.play(0,1,0.5);
+                        enemies[j].changeAni(['headshot','headshotDone']);  
+                        projectiles[i].remove();
+                        enemies[j].isDead = true;
+                        //gameWon = true;
+                        enemySpawned = false;
+                    }
                 }
-            }
-            if(projectiles[i].y<-650 || projectiles[i].y>=750){
-                projectiles[i].remove();
-            } 
-            if(projectiles[i].collides(floor)){
-                projectiles[i].remove();
+                if(projectiles[i].y<-650 || projectiles[i].y>=750){
+                    projectiles[i].remove();
+                } 
+                if(projectiles[i].collides(floor)){
+                    projectiles[i].remove();
+                }
             }
         }
     } else {
@@ -473,48 +478,46 @@ text("Health: " + playerHealth, 100,100);
 
         enemySpawned = true;
 
-        if(player.colliding(floor)){
-            enemies[0].changeAni('idle');  
-        } else {
-            enemies[0].changeAni('idleUp');;  
-        }
     }
-
-
-  
-    
 
     //check if enemy spawned in
     if(enemySpawned){
-        //make enemy unable to move
-        if(player.colliding(enemies[0])){
-            enemies[0].collider = "static";
-        } else {
-            enemies[0].collider = "static";
-        }
+        for(let j = 0; j < enemies.length; j++){
+            if(player.colliding(floor)){
+                enemies[j].changeAni('idle');  
+            } else {
+                enemies[j].changeAni('idleUp');;  
+            }
+            //make enemy unable to move
+            if(player.colliding(enemies[j])){
+                enemies[j].collider = "static";
+            } else {
+                enemies[j].collider = "static";
+            }
 
-        //enemy shoots at player when in distance 
-        if(enemies[0].x - player.x <= 1600 && enemyCanShoot && !gameWon){
-            enemyProjectile = new Sprite(enemies[0].x-80,enemies[0].y-50,25)
-            enemyProjectile.img = 'assets/bullet.png';
-            enemyProjectile.mirror.x = true;
-            revShot.play(0,1,0.2);
-            enemyProjectile.mass = 0;
-            enemyProjectiles.push(enemyProjectile);
-             if(player.colliding(floor)){
-                enemies[0].changeAni(['shoot','idle']);  
+            //enemy shoots at player when in distance 
+            if(enemies[j].x - player.x <= 1600 && enemies[j].isDead === false && enemies[j].canShoot === true && !gameWon){
+                enemyProjectile = new Sprite(enemies[j].x-80,enemies[j].y-50,25)
+                enemyProjectile.img = 'assets/bullet.png';
+                enemyProjectile.mirror.x = true;
+                revShot.play(0,1,0.2);
+                enemyProjectile.mass = 0;
+                enemyProjectiles.push(enemyProjectile);
+                if(player.colliding(floor)){
+                    enemies[j].changeAni(['shoot','idle']);  
 
-                enemyProjectile.moveTo(-1500,200,50);
-             } else {
-                 enemies[0].changeAni(['shootUp','idleUp']);  
-                 enemyProjectile.moveTo(-500,-1000,50);
-              }
-            
-            enemyCanShoot = false;
-            
-            setTimeout(() => {
-                enemyCanShoot = true;
-            }, 2000);
+                    enemyProjectile.moveTo(-1500,200,50);
+                } else {
+                    enemies[j].changeAni(['shootUp','idleUp']);  
+                    enemyProjectile.moveTo(-500,-1000,50);
+                }
+                
+                enemies[j].canShoot = false;
+                
+                setTimeout(() => {
+                    enemies[j].canShoot = true;
+                }, 2000);
+            }
         }
     }
     
