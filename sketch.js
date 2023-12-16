@@ -13,8 +13,6 @@ let playerMovingRight = false;
 let floor;
 
 //gun variables
-let gunText1;
-let gunText2;
 let revolver;
 let revolverEquipped = false;
 
@@ -34,12 +32,8 @@ let shakeScreen = false;
 let gameStart = true;
 let playerIsDead = false;
 let showDeathScreen = false;
-let introText1;
-let introText2;
-let introText3;
 let revolverSpawned = false;
 let gameWon = false;
-let winText;
 
 //enemy variables
 let enemy;
@@ -52,7 +46,9 @@ let enemiesSpawned = 0;
 let bg1x = 0;
 let bg2x = 0;
 
-
+//fonts
+let helsing;
+let testa;
 //respawn the player at start point function
 function respawnPlayer(){
     //delete floating objects if existing
@@ -82,37 +78,21 @@ function preload() {
     bg1 = loadImage('assets/1.png');
     bg2 = loadImage('assets/2.png');
     bg3 = loadImage('assets/3.jpeg');
+
+    //fonts
+    helsing = loadFont('assets/vanhelsing.ttf');
+    testa = loadFont('assets/Testamento-Jed@.ttf')
   }
 
 //set up function
 function setup(){
+    
     //set up canvas and world settings
     new Canvas(1920,1080);
     noStroke();
     rectMode(CENTER);
     world.gravity.y = 10;
 
-    //game instructions/introduction
-    introText1 = new Sprite(500,-450);
-    introText1.collider = "none";
-    introText1.text = "Welcome To Hellgun";
-    introText1.textSize = 75;
-    introText1.color = 50;
-    introText1.stroke = 50;
-
-    introText2 = new Sprite(150,-200);
-    introText2.collider = "none";
-    introText2.text = "A and D To Move";
-    introText2.textSize = 75;
-    introText2.color = 50;
-    introText2.stroke = 50;
-
-    introText3 = new Sprite(850,-200);
-    introText3.collider = "none";
-    introText3.text = "W To Jump";
-    introText3.textSize = 75;
-    introText3.color = 50;
-    introText3.stroke = 50;
 
     //initialize player
     player = new Sprite(0,200,256/7,200); //hitbox?
@@ -147,6 +127,8 @@ function setup(){
     floor.bounciness = 0;
     floor.visible = true;
     floor.color = 20;
+
+
 }
 
 
@@ -216,9 +198,7 @@ bg1x = -player.x / 4
 bg2x = -player.x / 8
 
 
-//UI
-textSize(75);
-text("Health: " + playerHealth, 100,100);
+
     // //player hitbox debug (shows hitbox on LMB click)
    //  player.debug = mouse.pressing();
     // arm.debug = mouse.pressing();
@@ -265,9 +245,6 @@ text("Health: " + playerHealth, 100,100);
     //check if player is dead
     if(!playerIsDead){
         -450, -200, -200
-        introText1.y = -450;
-        introText2.y = -200;
-        introText3.y = -200;
         //handling jumping 
         if(player.colliding(floor) && kb.pressing('up')){
             //jump only when touching floor
@@ -404,9 +381,7 @@ text("Health: " + playerHealth, 100,100);
             }
         }
     } else {
-        introText1.y = 2000;
-        introText2.y = 2000;
-        introText3.y = 2000;
+
     }
 
     //display text if game is won
@@ -417,20 +392,6 @@ text("Health: " + playerHealth, 100,100);
 
     //spawn revolver when passing a checkpoint
     if(player.x > 2000 && !revolverSpawned){
-        gunText1 = new Sprite(2700,-450);
-        gunText1.collider = "none";
-        gunText1.text = "Walk Over To Pick It Up";
-        gunText1.textSize = 75;
-        gunText1.color = 50;
-        gunText1.stroke = 50;
-
-        gunText2 = new Sprite(2700,-250);
-        gunText2.collider = "none";
-        gunText2.text = "Left Click To Shoot";
-        gunText2.textSize = 75;
-        gunText2.color = 50;
-        gunText2.stroke = 50;
-
         revolverSpawned = true;
         revolver = new Sprite(3000,10);
         revolver.img = "assets/revolver.png";
@@ -457,19 +418,7 @@ text("Health: " + playerHealth, 100,100);
 
     //spawn in enemy when player reaches checkpoint
     if(player.x > 3000 && !enemySpawned){
-        // enemyText1 = new Sprite(4500,-450);
-        // enemyText1.collider = "none";
-        // enemyText1.text = "Jump Over Bullets With W Or Dodge Them With S";
-        // enemyText1.textSize = 75;
-        // enemyText1.color = 50;
-        // enemyText1.stroke = 50;
 
-        // enemyText2 = new Sprite(4500,-250);
-        // enemyText2.collider = "none";
-        // enemyText2.text = "Aim At The Enemy And Shoot It To Win";
-        // enemyText2.textSize = 75;
-        // enemyText2.color = 50;
-        // enemyText2.stroke = 50;
 
         // enemies[0] = new Sprite(4900,145);        
         // enemies[0].addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
@@ -581,8 +530,29 @@ text("Health: " + playerHealth, 100,100);
     }
 
     player.collider = "dynamic";
+ 
+    //UI  
+  
+    textSize(50);
+    //text properties
+    fill(255);
+    stroke(0);
+    strokeWeight(4);  
+    textFont('helsing');
 
+    //debug text
+    text("player X: " + int(player.x) + " player Y: " + int(player.y), 100,40)
 
+    text("Health: " + playerHealth, 100,100);
+  
+    strokeWeight();
+    if (player.x > -200 && player.x < 800){
+    text("WASD to move", 500,750);
+    text("S to dodge bullets", 500,835);
+    }
 
-
+    if (player.x > 2600 && player.x < 3600){
+    text("Left Click to shoot", 500,750);
+    text("", 500,835);
+    }
 }
