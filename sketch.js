@@ -48,6 +48,11 @@ let startingEnemy;
 let enemySpawned;
 let enemiesSpawned = 0;
 
+//backgrounds
+let bg1x = 0;
+let bg2x = 0;
+
+
 //respawn the player at start point function
 function respawnPlayer(){
     //delete floating objects if existing
@@ -67,12 +72,16 @@ function respawnPlayer(){
     arm.img = "assets/Arm.png";
 }
 
-//sounds
 function preload() {
+    //sounds
     revShot = loadSound('assets/revShot.wav');
     pickup = loadSound('assets/pickup.wav');
     killSound = loadSound('assets/killSound.wav');
     damaged = loadSound('assets/damageRecieved.wav');
+    //images
+    bg1 = loadImage('assets/1.png');
+    bg2 = loadImage('assets/2.png');
+    bg3 = loadImage('assets/3.jpeg');
   }
 
 //set up function
@@ -132,16 +141,19 @@ function setup(){
     arm.anis.frameDelay = -80;
 
     //initialize floor
-    floor = new Sprite(2000,400,60000,300);
+
+    floor = new Sprite(10000,400,200000,300);
     floor.collider = "static";
     floor.bounciness = 0;
+    floor.visible = true;
+    floor.color = 20;
 }
 
 
 
 function moveCamera(){
     camera.x = random(player.x+597,player.x+604);
-    camera.y = random(player.y-247,player.y-254);
+    camera.y = random(-103,-94);
 }
 
 function shakeTheScreen(){
@@ -195,7 +207,15 @@ function spawnEnemy(x,y){
 //draw function
 function draw(){
     clear();
-    background(50);
+//background
+image(bg3,0,0);
+image(bg2, bg2x, 0);
+image(bg1, bg1x, 0);
+
+bg1x = -player.x / 4
+bg2x = -player.x / 8
+
+
 //UI
 textSize(75);
 text("Health: " + playerHealth, 100,100);
@@ -227,7 +247,7 @@ text("Health: " + playerHealth, 100,100);
         } else{
             //adjust camera to follow player
             camera.x = player.x+600;
-            camera.y = player.y-250;
+            camera.y = -100;
             
         }
     }
@@ -251,7 +271,7 @@ text("Health: " + playerHealth, 100,100);
         //handling jumping 
         if(player.colliding(floor) && kb.pressing('up')){
             //jump only when touching floor
-            player.moveTo(player.x,player.y-200,8);
+            player.moveTo(player.x + 50,player.y-200,8);
         }
 
         //handling movement
@@ -320,7 +340,11 @@ text("Health: " + playerHealth, 100,100);
         if(player.ani.name != 'roll'){     
         if (kb.pressing('left')) {
             player.changeAni('walkForward');
+     
+
         } else if (kb.pressing('right')) {
+        
+
             player.changeAni('walkForward');
         } else {
         //play idle animation if movement stops
@@ -472,11 +496,11 @@ text("Health: " + playerHealth, 100,100);
         // //enemies[0].overlaps(projectile);
         // //enemy animations
 
-        spawnEnemy(4900,145);
+       // spawnEnemy(4900,145);
 
-        spawnEnemy(5500,145);
+       // spawnEnemy(5500,145);
 
-        enemySpawned = true;
+       // enemySpawned = true;
 
     }
 
@@ -557,5 +581,8 @@ text("Health: " + playerHealth, 100,100);
     }
 
     player.collider = "dynamic";
+
+
+
 
 }
