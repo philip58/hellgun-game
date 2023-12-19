@@ -43,6 +43,13 @@ let startingEnemy;
 let enemySpawned;
 let enemiesSpawned = 0;
 
+//justin experimenting
+let runnerImg;
+let floorTile;
+let walkable;
+let tileSize = 200;
+let groundSensor;
+
 //backgrounds
 let bg1x = 0;
 let bg2x = 0;
@@ -82,6 +89,8 @@ function preload() {
     deflect2 = loadSound('assets/deflect1.wav');
     menuMusic = loadSound('assets/menu.mp3');
     roll = loadSound('assets/roll.wav');
+    healthPickup = loadSound('assets/healthpack.wav');
+
 
     //images
     bg1 = loadImage('assets/1.png');
@@ -89,10 +98,30 @@ function preload() {
     bg3 = loadImage('assets/3.jpeg');
     tutIMG = loadImage('assets/tutorial.png');
     healthIMG = loadImage('assets/health.png');
+    floorIMG = loadImage('assets/floor.png');
+    healthPackIMG = loadImage('assets/HealthPickup.png');
+    boxIMG = loadImage('assets/box.png');
 
     //fonts
     helsing = loadFont('assets/vanhelsing.ttf');
     testa = loadFont('assets/Testamento-Jed@.ttf');
+
+    //runner
+    runnerImg = loadImage('assets/enemyRun.png');
+
+    //pickups
+    healthPack = new Group()
+    healthPack.w = 32;
+    healthPack.h = 32;
+    healthPack.spriteSheet = healthPackIMG;
+    healthPack.addAnis({
+        hover:{frameSize: [32,32], frames:4}
+    })
+    healthPack.tile = 'h'
+    healthPack.collider = 'static';
+    healthPack.rotationLock = true;
+    healthPack.anis.offset.y=29
+
   }
 
 //set up function
@@ -100,23 +129,93 @@ function setup(){
     //music
     //menuMusic.play(0,1,0.2);
     //set up canvas and world settings
-    new Canvas(1920,1080);
+    new Canvas(1920,1080, 'pixelated x1');
     noStroke();
     rectMode(CENTER);
 
      world.gravity.y = 10;
      
+    //health pack
+    healthPack.w = 32;
+    healthPack.h = 32;
+    healthPack.scale = 2;
+
+
+    //runner enemy
+    runner = new Group()
+    runner.debug = true;
+        runner.w = 60
+        runner.h = 199;        
+        runner.tile = "r"
+        runner.rotationLock = true;
+        runner.friction = 0;
+        runner.drag = 0;
+        runner.spriteSheet = runnerImg;
+        runner.addAnis({
+        run:{frameSize: [256,256], frames: 16}
+        })
+        runner.anis.offset.y=-29
+
+        walkable = new Group()
+            walkable.layer =1;
+
+        floorTile = new walkable.Group()
+            floorTile.w = 200
+            floorTile.h = 150;
+            floorTile.tile = "a";
+            floorTile.collider = 'static';
+            floorTile.bounciness = 0;
+            floorTile.image = floorIMG;
+
+            boxTile = new walkable.Group()
+            boxTile.w = tileSize
+            boxTile.h = 150;
+            boxTile.tile = "b";
+            boxTile.collider = 'static';
+            boxTile.bounciness = 0;
+            boxTile.image = boxIMG;
+
+        tileMap = new Tiles(
+            [
+            'aa.................................................................................................................................................',
+            'aa.................................................................................................................................................',
+            'aa.................................................................................................................................................',
+            'aa.................................................................................................................................................',
+            'aa.h.h.b..r.r......................................................................................................................................',
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        ], -700,
+            -380,
+            floorTile.w,
+            floorTile.h,
+        );
      
      //initialize player
     player = new Sprite(0,200,256/7,200); //hitbox?
     player.collider = "dynamic";   
     player.rotationLock = true;
-    player.bounciness = 0;
+    player.bounciness = 0;        
+    player.friction = 0;
+    //player.debug = true;
+        //movement fix
+    groundSensor = new Sprite(player.x, player.y + player.y/2, player.w,1)
+    groundSensor.visible = false;
+    groundSensor.mass = 0.1;
+    let joint = new GlueJoint(player,groundSensor);
+    joint.visible = false;
+        //removes healthpacks
+    player.overlaps(healthPack, (p,c) =>{
+        c.remove();
+        playerHealth++;
+        healthPickup.play(0,1,0.2);
+
+    })
+
     //player arm
     arm = new Sprite(player.x,player.y,20,20);
     arm.collider ="dynamic";
     arm.img = 'assets/arm.png';
     arm.overlaps(player);
+
     //player animations    
     player.addAni('death', 'assets/death.png',{frameSize: [256,256], frames: 60});
     player.addAni('deathDone', 'assets/deathDone.png',{frameSize: [256,256], frames: 1});
@@ -138,11 +237,11 @@ function setup(){
 
     //initialize floor
 
-    floor = new Sprite(10000,400,200000,300);
-    floor.collider = "static";
-    floor.bounciness = 0;
-    floor.visible = true;
-    floor.color = 20;
+    //floor = new Sprite(10000,400,200000,300);
+    //floor.collider = "static";
+    //floor.bounciness = 0;
+    //floor.visible = true;
+   //floor.color = 20;
 }
 
 function moveCamera(){
@@ -186,7 +285,7 @@ function spawnEnemy(x,y){
     player.overlaps(enemy);
     
     //enemy animations
-    if(player.colliding(floor)){
+    if(player.colliding(floorTile)){
         enemy.changeAni('idle');  
     } else {
         enemy.changeAni('idleUp');;  
@@ -224,6 +323,8 @@ const playY = 475;
 const tut = 'TUTORIAL';
 const tutX = 150;
 const tutY = 575;
+
+
 //draw function
 function draw(){
     clear();
@@ -282,7 +383,7 @@ drawingContext.shadowBlur = 0;
 
 if (tutorialOverlay == true){
     image(tutIMG,0,0,width,height);
-    floor.visible = false;
+    floorTile.visible = false;
     player.visible = false;
     arm.visible = false;
     if(mouse.presses()){
@@ -290,12 +391,14 @@ if (tutorialOverlay == true){
     }
     
 } else {
-    floor.visible = true;
+   floorTile.visible = true;
     player.visible = true;
     arm.visible = true;
 }
 
 } else if (gameStart == true){
+
+
 
 bg1x = -player.x / 4
 bg2x = -player.x / 8
@@ -346,7 +449,7 @@ bg2x = -player.x / 8
     if(!playerIsDead){
         -450, -200, -200
         //handling jumping 
-        if(player.colliding(floor) && kb.pressing('up')){
+        if(groundSensor.overlapping(walkable) && kb.pressing('up')){
             //jump only when touching floor
             player.moveTo(player.x + 50,player.y-200,8);
         }
@@ -423,7 +526,7 @@ bg2x = -player.x / 8
         //play idle animation if movement stops
             player.changeAni('idle');
         }
-        if(player.colliding(floor) == false){
+        if(groundSensor.overlapping(walkable) == false){
             player.changeAni('jump');
         }
     }
@@ -488,7 +591,7 @@ bg2x = -player.x / 8
                 if(projectiles[i].y<-650 || projectiles[i].y>=750){
                     projectiles[i].remove();
                 } 
-                if(projectiles[i].collides(floor)){
+                if(projectiles[i].collides(floorTile)){
                     projectiles[i].remove();
                 }
             }
@@ -568,7 +671,7 @@ bg2x = -player.x / 8
     //check if enemy spawned in
     if(enemySpawned){
         for(let j = 0; j < enemies.length; j++){
-            if(player.colliding(floor)){
+            if(player.colliding(floorTile)){
                 enemies[j].changeAni('idle');  
             } else {
                 enemies[j].changeAni('idleUp');;  
@@ -588,7 +691,7 @@ bg2x = -player.x / 8
                 revShot.play(0,1,0.2);
                 enemyProjectile.mass = 0;
                 enemyProjectiles.push(enemyProjectile);
-                if(player.colliding(floor)){
+                if(player.colliding(floorTile)){
                     enemies[j].changeAni(['shoot','idle']);  
 
                     enemyProjectile.moveTo(-1500,200,50);
@@ -636,7 +739,7 @@ bg2x = -player.x / 8
         if(enemyProjectiles[i].y<-650 || enemyProjectiles[i].y>=750){
             enemyProjectiles[i].remove();
         } 
-        if(enemyProjectiles[i].collides(floor)){
+        if(enemyProjectiles[i].collides(floorTile)){
             enemyProjectiles[i].remove();
         }
     }
