@@ -17,6 +17,7 @@ let floor;
 let revolver;
 let revolverEquipped = false;
 let swordEquipped = true;
+let thrownRev;
 
 //player projectile variables
 let projectile;
@@ -200,6 +201,15 @@ function setup(){
     // arm.overlaps(shooter);
     // player.overlaps(shooter);
 
+    //revolver group
+    rev = new Group();
+    rev.img = "assets/revolver.png";
+    rev.scale = 0.5;
+    rev.width = 50;
+    rev.height = 25;
+    rev.ammo = 6;
+    rev.tile = "g";
+
     walkable = new Group();
     walkable.layer =1;
 
@@ -225,7 +235,7 @@ function setup(){
         'aa.................................................................................................................................................',
         'aa.................................................................................................................................................',
         'aa.................................................................................................................................................',
-        'aa.h.h.b..r.r............s.........................................................................................................................',
+        'aa.h.h.b..r.r.....g......s.........................................................................................................................',
         'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ], -700,
         -380,
@@ -566,6 +576,25 @@ bg2x = -player.x / 8
             } else {
             //melee
             if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
+                //check if player hits enemy
+                for(let i = 0; i < runner.length; i++){
+                    if(player.x - runner[i].x <= 200 && player.x - runner[i].x >= -200 && player.y >= runner[i].y-30){
+                        killSound.play(0,1,0.5);
+                        runner[i].changeAni(['headshot','headshotDone']);
+                        setTimeout(() => {
+                            runner[i].remove();
+                        }, 1000);
+                    }
+                }
+                for(let i = 0; i < shooter.length; i++){
+                    if(player.x - shooter[i].x <= 200 && player.x - shooter[i].x >= -200 && player.y >= shooter[i].y-30){
+                        killSound.play(0,1,0.5);
+                        shooter[i].changeAni(['headshot','headshotDone']);
+                        setTimeout(() => {
+                            shooter[i].remove();
+                        }, 1000);
+                    }
+                }
                 arm.changeAni(['melee', 'armIdle']);
                 swing.play(0,1,0.2);
 
@@ -582,34 +611,6 @@ bg2x = -player.x / 8
     }
         
     } 
-
-
-    //spawn revolver when passing a checkpoint
-    if(player.x > 2000 && !revolverSpawned){
-        revolverSpawned = true;
-        revolver = new Sprite(3000,10);
-        revolver.img = "assets/revolver.png";
-        revolver.scale = 0.5;
-        revolver.width = 50;
-        revolver.height = 25;
-        
-    }
-
-    //check if revolver spawned in
-    if(revolverSpawned){
-        //make revolver unable to move
-        if(player.colliding(revolver)){
-            revolver.collider = "dynamic";           
-            revolverEquipped = true;
-            swordEquipped = false;
-            revolver.remove();
-            pickup.play(0,1,1);
-            arm.img = 'assets/RevolverArm.png';
-        } else {
-            revolver.collider = "dynamic";
-        }
-
-    }
     
     //enemy projectile collision handling
     for(let i = 0; i < enemyProjectiles.length; i++){
@@ -755,6 +756,60 @@ bg2x = -player.x / 8
         }
     }
 }
+
+    //pick up revolver when touched
+    for(let i = 0; i < rev.length; i++){
+        if(!revolverEquipped && player.colliding(rev)){
+            rev.collider = "dynamic";           
+            revolverEquipped = true;
+            swordEquipped = false;
+            rev.remove();
+            pickup.play(0,1,1);
+            arm.img = 'assets/RevolverArm.png';
+        } else {
+            rev.collider = "dynamic";
+        }
+    }
+
+    //drop gun when right mouse button clicked
+    if(revolverEquipped && mouse.right > 1 && mouse.right < 10){
+        thrownRev = new Sprite(player.x+50,player.y-50);
+        thrownRev.collider = "dynamic";
+        thrownRev.img = "assets/revolver.png";
+        arm.img = "assets/Arm.png";
+        thrownRev.scale = 0.5;
+        thrownRev.width = 50;
+        thrownRev.height = 25;
+        thrownRev.moveTowards(mouse.x,mouse.y,25);
+        revolverEquipped = false;
+        
+    }
+    
+    if(thrownRev){
+        if(thrownRev.overlapping(walkable)){
+            thrownRev.remove();
+        }
+        for(let i = 0; i < runner.length; i++){
+            if(thrownRev.collides(runner[i])){
+                killSound.play(0,1,0.5);
+                runner[i].changeAni(['headshot','headshotDone']);
+                setTimeout(() => {
+                    runner[i].remove();
+                }, 1000);
+                thrownRev.remove();
+            }
+        }
+        for(let i = 0; i < shooter.length; i++){
+            if(thrownRev.collides(shooter[i])){
+                killSound.play(0,1,0.5);
+                shooter[i].changeAni(['headshot','headshotDone']);
+                setTimeout(() => {
+                    shooter[i].remove();
+                }, 1000);
+                thrownRev.remove();
+            }
+        }
+    }
 
 }
 }
