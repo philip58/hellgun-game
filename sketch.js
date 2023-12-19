@@ -148,7 +148,7 @@ function setup(){
 
     //runner enemy
     runner = new Group();
-    //runner.debug = true;
+    runner.debug = true;
     runner.dead = false;
     runner.w = 60;
     runner.h = 199;        
@@ -229,7 +229,7 @@ function setup(){
         'aa.................................................................................................................................................',
         'aa.................................................................................................................................................',
         'aa.................................................................................................................................................',
-        'aa.h.h.b..r.r.....g......s.........................................................................................................................',
+        'aa.h.h.b....r.....g......s.....................b......................b.b..........................................................................',
         'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ], -700,
         -380,
@@ -564,7 +564,7 @@ bg2x = -player.x / 8
                     }
                     projectile.mass = 0;
                     projectiles.push(projectile);
-                    projectile.moveTowards(mouse.x,mouse.y,50);
+                    projectile.moveTowards(mouse.x,mouse.y,10);
                     shakeTheScreen();
                 }
             } else {
@@ -589,8 +589,34 @@ bg2x = -player.x / 8
                         }, 1000);
                     }
                 }
-                arm.changeAni(['melee', 'armIdle']);
-                swing.play(0,1,0.2);
+
+                //deflect bullet
+                for(let i = 0; i < enemyProjectiles.length; i++){
+                    if(enemyProjectiles[i].x - player.x > 0 && enemyProjectiles[i].x - player.x <=150){
+                        enemyProjectiles[i].remove();
+                        projectile = new Sprite(arm.x+90,arm.y+15,25);
+                        projectile.img = 'assets/bullet.png'
+                        //projectile.rotation = mouse.y/8+20;          
+                        deflect1.play(0,1,0.2);
+                        deflect2.play(0,1,0.2);
+
+                        projectile.mass = 0;
+                        projectiles.push(projectile);
+                        projectile.moveTowards(mouse.x,mouse.y,50);
+                        shakeTheScreen();
+                    } else if(enemyProjectiles[i].x - player.x < 0 && enemyProjectiles[i].x - player.x >= -150){
+                        enemyProjectiles[i].remove();
+                        projectile = new Sprite(arm.x-90,arm.y+15,25);
+                        projectile.img = 'assets/bullet.png'
+                        //projectile.rotation = mouse.y/8+20;          
+                        deflect1.play(0,1,0.2);
+                        deflect2.play(0,1,0.2);
+                        projectile.mass = 0;
+                        projectiles.push(projectile);
+                        projectile.moveTowards(mouse.x,mouse.y,50);
+                        shakeTheScreen();
+                    }
+                }
 
                 //melee an enemy
                // if(arm.collides()){
@@ -777,7 +803,7 @@ bg2x = -player.x / 8
             rev.collider = "dynamic";           
             revolverEquipped = true;
             swordEquipped = false;
-            rev.remove();
+            rev[i].remove();
             pickup.play(0,1,1);
             arm.img = 'assets/RevolverArm.png';
         } else {
