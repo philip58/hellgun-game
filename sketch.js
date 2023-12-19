@@ -264,11 +264,11 @@ function setup(){
 
     tileMap = new Tiles(
         [
-        'a.............................................................',
-        'a.............................h.......h................s......',
-        'a........................sg..............s...........s.b......',
-        'a...............g......s.bbb.....sbbr....b.........s.bsb....w.',
-        'ar..........rrrsb.rrrrrbbbbbrrrrsbbbbgsbsbrrrrrhsgsbsbbbr..s..',
+        '..............................................................',
+        '..............................h.......h................s......',
+        '.........................sg..............s...........s.b......',
+        '................g......s.bbb.....sbbr....b.........s.bsb....w.',
+        'rr..........rrrsb.rrrrrbbbbbrrrrsbbbbgsbsbrrrrrhsgsbsbbbr..s..',
         'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ], -700,
         -380,
@@ -409,8 +409,8 @@ function draw(){
     clear();
 //background
 image(bg3,0,0);
-image(bg2, bg2x, 0);
-image(bg1, bg1x, 0);
+image(bg2, bg2x, 210);
+image(bg1, bg1x, 220);
 
 if (gameStart == false){
     //main menu
