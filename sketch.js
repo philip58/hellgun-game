@@ -115,7 +115,7 @@ function preload() {
     shooterImg = loadImage('assets/revEnemy.png');
 
     //pickups
-    healthPack = new Group()
+    healthPack = new Group();
     healthPack.w = 32;
     healthPack.h = 32;
     healthPack.spriteSheet = healthPackIMG;
@@ -169,7 +169,7 @@ function setup(){
     shooter = new Group();
     //shooter.debug = true;
     shooter.rotationLock = true;
-    shooter.collider = "dynamic"; 
+    shooter.collider = "static"; 
     shooter.width = 256/7;
     shooter.height = 150;
     shooter.dead = false;  
@@ -235,7 +235,7 @@ function setup(){
         'aa.................................................................................................................................................',
         'aa.................................................................................................................................................',
         'aa.................................................................................................................................................',
-        'aa.h.h.b..r.r.....g......s.........................................................................................................................',
+        'aa.h.h.b..r.r.....g......s....s..g..r..............................................................................................................',
         'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ], -700,
         -380,
@@ -576,6 +576,8 @@ bg2x = -player.x / 8
             } else {
             //melee
             if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
+                arm.changeAni(['melee', 'armIdle']);
+                swing.play(0,1,0.2);
                 //check if player hits enemy
                 for(let i = 0; i < runner.length; i++){
                     if(player.x - runner[i].x <= 200 && player.x - runner[i].x >= -200 && player.y >= runner[i].y-30){
@@ -595,8 +597,31 @@ bg2x = -player.x / 8
                         }, 1000);
                     }
                 }
-                arm.changeAni(['melee', 'armIdle']);
-                swing.play(0,1,0.2);
+
+                //deflect bullet
+                for(let i = 0; i < enemyProjectiles.length; i++){
+                    if(enemyProjectiles[i].x - player.x > 0 && enemyProjectiles[i].x - player.x <=150){
+                        enemyProjectiles[i].remove();
+                        projectile = new Sprite(arm.x+90,arm.y+15,25);
+                        projectile.img = 'assets/bullet.png'
+                        //projectile.rotation = mouse.y/8+20;          
+                        revShot.play(0,1,0.2);
+                        projectile.mass = 0;
+                        projectiles.push(projectile);
+                        projectile.moveTowards(mouse.x,mouse.y,50);
+                        shakeTheScreen();
+                    } else if(enemyProjectiles[i].x - player.x < 0 && enemyProjectiles[i].x - player.x >= -150){
+                        enemyProjectiles[i].remove();
+                        projectile = new Sprite(arm.x-90,arm.y+15,25);
+                        projectile.img = 'assets/bullet.png'
+                        //projectile.rotation = mouse.y/8+20;          
+                        revShot.play(0,1,0.2);
+                        projectile.mass = 0;
+                        projectiles.push(projectile);
+                        projectile.moveTowards(mouse.x,mouse.y,50);
+                        shakeTheScreen();
+                    }
+                }
 
                 //melee an enemy
                // if(arm.collides()){
@@ -641,6 +666,9 @@ bg2x = -player.x / 8
             enemyProjectiles[i].remove();
         } 
         if(enemyProjectiles[i].collides(floorTile)){
+            enemyProjectiles[i].remove();
+        }
+        if(enemyProjectiles[i].overlapping(walkable)){
             enemyProjectiles[i].remove();
         }
     }
@@ -736,17 +764,18 @@ bg2x = -player.x / 8
     }
    }
 
-   //player projectiles hit enemy
+   //player projectiles hit shooter
    for(let i = 0; i < projectiles.length; i++){
     for(let j = 0; j < shooter.length; j++){
         if(projectiles[i].collides(shooter[j])){
-            swordImpact.play(0,1,0.5,0.1);
-            killSound.play(0,1,0.5);
-            shooter[j].changeAni(['headshot','headshotDone']);  
+            //runner death
+            shooter.dead = true;
             projectiles[i].remove();
-            shooter[j].dead = true;
-            //gameWon = true;
-            enemySpawned = false;
+            killSound.play(0,1,0.5);
+            shooter[j].changeAni(['headshot','headshotDone']);
+            setTimeout(() => {
+                shooter[j].remove();
+            }, 1000);
         }
         if(projectiles[i].y<-650 || projectiles[i].y>=750){
             projectiles[i].remove();
