@@ -566,6 +566,21 @@ bg2x = -player.x / 8
             } else {
             //melee
             if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
+                //check if player hits enemy
+                for(let i = 0; i < runner.length; i++){
+                    if(player.x - runner[i].x <= 200 && player.x - runner[i].x >= -200 && player.y >= runner[i].y-30){
+                        console.log("hit");
+                        killSound.play(0,1,0.5);
+                        runner[i].remove();
+                    }
+                }
+                for(let i = 0; i < shooter.length; i++){
+                    if(player.x - shooter[i].x <= 200 && player.x - shooter[i].x >= -200 && player.y >= shooter[i].y-30){
+                        console.log("hit");
+                        killSound.play(0,1,0.5);
+                        shooter[i].remove();
+                    }
+                }
                 arm.changeAni(['melee', 'armIdle']);
                 swing.play(0,1,0.2);
 
