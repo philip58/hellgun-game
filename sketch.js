@@ -303,43 +303,6 @@ function stopShakingScreen(){
     shakeScreen = false;
 }
 
-//spawn an enemy
-// function spawnEnemy(x,y){
-//     enemy = new Sprite(x,y);        
-//     enemy.addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
-//     enemy.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});
-//     enemy.addAni('shoot','assets/revEnemyShootLeft.png',{frameSize:[256,256], frames: 9});
-//     enemy.addAni('shootUp','assets/revEnemyShootUp.png',{frameSize:[256,256], frames: 9});
-//     enemy.addAni('idle','assets/revEnemy.png',{frameSize:[256,256], frames: 30});
-//     enemy.addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});
-
-//     //iterate enemy counter
-//     enemiesSpawned++;
-//     enemy.rotationLock = true;
-//     enemy.collider = "dynamic"; 
-//     enemy.width = 256/7;
-//     enemy.height = 150;
-//     enemy.anis.offset.y=-20;
-//     enemy.anis.offset.x=0;
-//     enemy.mirror.x = true;  
-//     enemy.canShoot = true;
-//     enemy.isDead = false;
-
-//     //player cant push enemy
-//     arm.overlaps(enemy);
-//     player.overlaps(enemy);
-    
-//     //enemy animations
-//     if(player.colliding(floorTile)){
-//         enemy.changeAni('idle');  
-//     } else {
-//         enemy.changeAni('idleUp');;  
-//     }
-
-//     //push enemy to enemy array
-//     enemies.push(enemy);
-// }
-
 //main menu buttons
 function isMouseInsideText(message, messageX, messageY) {
     const messageWidth = textWidth(message);
@@ -447,9 +410,7 @@ if (tutorialOverlay == true){
 
 bg1x = -player.x / 4
 bg2x = -player.x / 8
-    // //player hitbox debug (shows hitbox on LMB click)
-   //  player.debug = mouse.pressing();
-    // arm.debug = mouse.pressing();
+
 
     //shake the screen
     //shake the camera when true
@@ -619,35 +580,9 @@ bg2x = -player.x / 8
             }
         }
     }
-        //check for projectile collisions 
-        // for(let i = 0; i < projectiles.length; i++){
-        //     for(let j = 0; j < enemies.length; j++){
-        //         if(enemySpawned){
-        //             if(projectiles[i].collides(enemies[j])){
-        //                 swordImpact.play(0,1,0.5,0.1);
-        //                 killSound.play(0,1,0.5);
-        //                 enemies[j].changeAni(['headshot','headshotDone']);  
-        //                 projectiles[i].remove();
-        //                 enemies[j].isDead = true;
-        //                 //gameWon = true;
-        //                 enemySpawned = false;
-        //             }
-        //         }
-        //         if(projectiles[i].y<-650 || projectiles[i].y>=750){
-        //             projectiles[i].remove();
-        //         } 
-        //         if(projectiles[i].collides(floorTile)){
-        //             projectiles[i].remove();
-        //         }
-        //     }
-        // }
+        
     } 
 
-    //display text if game is won
-    // if(gameWon){
-    //     textSize(75);
-    //     text("CONGRATS YOU WON!!!", 500,150);
-    // }
 
     //spawn revolver when passing a checkpoint
     if(player.x > 2000 && !revolverSpawned){
@@ -675,108 +610,29 @@ bg2x = -player.x / 8
         }
 
     }
-
-    //spawn in enemy when player reaches checkpoint
-    // if(player.x > 3000 && !enemySpawned){
-
-
-    //      enemies[0] = new Sprite(4900,145);        
-    //      enemies[0].addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
-    //      enemies[0].addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});
-    //      enemies[0].addAni('shoot','assets/revEnemyShootLeft.png',{frameSize:[256,256], frames: 9});
-    //      enemies[0].addAni('shootUp','assets/revEnemyShootUp.png',{frameSize:[256,256], frames: 9});
-    //      enemies[0].addAni('idle','assets/revEnemy.png',{frameSize:[256,256], frames: 30});
-    //      enemies[0].addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});
-
-
-
-    //      enemies[0].rotationLock = true;
-    //      enemies[0].collider = "dynamic"; 
-    //      enemies[0].width = 256/7;
-    //      enemies[0].height = 150;
-    //      enemies[0].anis.offset.y=-20;
-    //      enemies[0].anis.offset.x=0;
-    //      enemies[0].mirror.x = true;  
-
-    //     // //player cant push enemy
-    //      //arm.overlaps(enemies[0]);
-    //      //player.overlaps(enemies[0]);
-    //      //enemies[0].overlaps(projectile);
-    //      //enemy animations
-
-    //     spawnEnemy(6000,145);
-
-    //     spawnEnemy(5500,145);
-
-    //     enemySpawned = true;
-
-    // }
-
-    //check if enemy spawned in
-    // if(enemySpawned){
-    //     for(let j = 0; j < enemies.length; j++){
-    //         if(player.colliding(floorTile)){
-    //             enemies[j].changeAni('idle');  
-    //         } else {
-    //             enemies[j].changeAni('idleUp');;  
-    //         }
-    //         //make enemy unable to move
-    //         if(player.colliding(enemies[j])){
-    //             enemies[j].collider = "static";
-    //         } else {
-    //             enemies[j].collider = "static";
-    //         }
-
-    //         //enemy shoots at player when in distance 
-    //         if(enemies[j].x - player.x <= 1600 && enemies[j].isDead === false && enemies[j].canShoot === true && !gameWon && !playerIsDead){
-    //             enemyProjectile = new Sprite(enemies[j].x-80,enemies[j].y-50,25)
-    //             enemyProjectile.img = 'assets/bullet.png';
-    //             enemyProjectile.mirror.x = true;
-    //             revShot.play(0,1,0.2);
-    //             enemyProjectile.mass = 0;
-    //             enemyProjectiles.push(enemyProjectile);
-    //             if(player.colliding(floorTile)){
-    //                 enemies[j].changeAni(['shoot','idle']);  
-
-    //                 enemyProjectile.moveTo(-1500,200,50);
-    //             } else {
-    //                 enemies[j].changeAni(['shootUp','idleUp']);  
-    //                 enemyProjectile.moveTo(-500,-1000,50);
-    //             }
-                
-    //             enemies[j].canShoot = false;
-                
-    //             setTimeout(() => {
-    //                 enemies[j].canShoot = true;
-    //             }, 2000);
-    //         }
-    //     }
-    // }
     
     //enemy projectile collision handling
     for(let i = 0; i < enemyProjectiles.length; i++){
-        if(enemySpawned){
-            if(enemyProjectiles[i].collides(player)){
-                if(player.ani.name === 'roll'){
-                    player.collider = "none";
-                    arm.collider = "none";
-                    enemyProjectiles[i].x = player.x - 100;
-                    enemyProjectiles[i].vel.x = -50; 
-                } else {
-                    player.collider = "dynamic";
-                    arm.collider = "dynamic";
-                    shakeTheScreen();
-                    enemyProjectiles[i].remove();
-                    if(playerHealth <= 1){
-                        damaged.play(0,1,0.5);
-                        arm.scale = 0;
-                        player.changeAni(['death', 'deathDone']);
-                        playerIsDead = true;
-                    } else{
-                        playerHealth--;
-                        damaged.play(0,1,0.5);
+        if(enemyProjectiles[i].collides(player)){
+            if(player.ani.name === 'roll'){
+                player.collider = "none";
+                arm.collider = "none";
+                enemyProjectiles[i].x = player.x - 100;
+                enemyProjectiles[i].vel.x = -50; 
+            } else {
+                player.collider = "dynamic";
+                arm.collider = "dynamic";
+                shakeTheScreen();
+                enemyProjectiles[i].remove();
+                if(playerHealth <= 1){
+                    damaged.play(0,1,0.5);
+                    arm.scale = 0;
+                    player.changeAni(['death', 'deathDone']);
+                    playerIsDead = true;
+                } else{
+                    playerHealth--;
+                    damaged.play(0,1,0.5);
 
-                    }
                 }
             }
         }
@@ -806,18 +662,6 @@ bg2x = -player.x / 8
     image(healthIMG,75,75,128,128);
     text(playerHealth, 125,175);
     }
-    //in-game tutorial
-   // if (player.x > -200 && player.x < 800){
-   // text("WASD to move", 500,750);
-   // text("S to dodge bullets", 500,835);
-   // }
-
-   // if (player.x > 2600 && player.x < 3600){
-    //text("Left Click to shoot", 500,750);
-   // text("", 500,835);
-   // strokeWeight();
-
-   // }
 
    //runner enemy runs to player when in range
    for(let i = 0; i < runner.length; i++){
