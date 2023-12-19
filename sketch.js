@@ -269,7 +269,7 @@ function setup(){
     player.addAni('rollBack', 'assets/rollBack.png',{frameSize: [256,256], frames: 18});
     player.addAni('jump', 'assets/jump.png',{frameSize: [256,256], frames: 90});    
     player.addAni('idle', 'assets/idle.png',{frameSize: [256,256], frames: 30});
-    player.anis.offset.y=-29;
+    player.anis.offset.y=-25;
     player.anis.offset.x=10;
 
     arm.addAni('revShot', 'assets/revShot.png',{frameSize: [256,256], frames: 9});
