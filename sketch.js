@@ -111,7 +111,7 @@ function preload() {
     runnerImg = loadImage('assets/enemyRun.png');
 
     //shooter
-    shooterImg = loadImage('assets/revEnemy.png');
+    //shooterIdle = loadImage('assets/revEnemyIdle.png');
 
     //pickups
     healthPack = new Group()
@@ -161,40 +161,34 @@ function setup(){
     })
     runner.addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
     runner.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});
-         
-    runner.anis.offset.y=-29
+    runner.anis.offset.y=-27
 
     //shooter enemy
     shooter = new Group();
-    //shooter.debug = true;
+    shooter.debug = true;
     shooter.rotationLock = true;
     shooter.collider = "dynamic"; 
-    shooter.width = 256/7;
-    shooter.height = 150;
+    shooter.width = 60;
+    shooter.height = 199;
     shooter.dead = false;  
     shooter.canShoot = true;   
     shooter.tile = "s";
     shooter.friction = 0;
     shooter.drag = 0;
-    shooter.spriteSheet = shooterImg;
-    // shooter.addAnis({
-    //     run:{frameSize: [256,256], frames: 16}
-    // });
-    
+    shooter.addAnis({
+        
+    })
     //shooter animations
-    shooter.addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
-    shooter.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});   
-    shooter.addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
-    shooter.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});
     shooter.addAni('shoot','assets/revEnemyShootLeft.png',{frameSize:[256,256], frames: 9});
     shooter.addAni('shootUp','assets/revEnemyShootUp.png',{frameSize:[256,256], frames: 9});
-    shooter.addAni('idle','assets/revEnemy.png',{frameSize:[256,256], frames: 30});
-    shooter.addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});
+    shooter.addAni('shooterIdle','assets/revEnemyIdle.png',{frameSize:[256,256], frames: 30});   
+    shooter.addAni('idleUp','assets/revEnemyUp.png',{frameSize:[256,256], frames: 30});   
+    shooter.addAni('headshot','assets/headshot.png',{frameSize:[256,256], frames: 25});
+    shooter.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});  
+
+
     //enemySpawned = true;
-    
-    shooter.anis.offset.y=-20;
-    shooter.anis.offset.x=0;
-    shooter.mirror.x = true;  
+
 
     //player cant push enemy
     // arm.overlaps(shooter);
@@ -548,13 +542,13 @@ bg2x = -player.x / 8
                     if (mouse.x > player.x){
                         projectile = new Sprite(arm.x+90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
-                        //projectile.rotation = mouse.y/8+20;         
+                        //projectile.rotation = -mouse.y/8+20;         
                         arm.changeAni(['revShot','revIdle']);  
                         revShot.play(0,1,0.2);
                     } else{
                         projectile = new Sprite(arm.x-90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
-                        //projectile.rotation = -mouse.y/8+20;
+                       // projectile.rotation = -mouse.y/8+20;
                         arm.changeAni(['revShot','revIdle']);  
                         revShot.play(0,1,0.2);
                     }
@@ -666,8 +660,16 @@ bg2x = -player.x / 8
    //runner enemy runs to player when in range
    for(let i = 0; i < runner.length; i++){
     if(!runner.dead && (runner[i].x - player.x <= 1600 || player.x - runner[i].x <= 1600)){
-        runner[i].moveTo(player.x,194,3);
+        runner[i].moveTo(player.x,194,3);  
+        if(runner[i].x > player.x){
+            runner[i].mirror.x = true;
+        } else {
+            runner[i].mirror.x = false;
+        }
     } 
+
+
+
     
     //deal with player and runner collision
     //decrement health and give 1 second grace period before next hit
@@ -706,20 +708,28 @@ bg2x = -player.x / 8
     }
    }
 
+
    //enemy shooting
    for(let i = 0; i < shooter.length; i++){
-    //enemy animations
-    shooter[i].changeAni('idleUp');
     //shooter shoots at player when in range
     if(shooter[i].x - player.x <= 1600 && shooter[i].dead === false && shooter[i].canShoot === true && !playerIsDead){
+          if (shooter[i].canShoot === false){
+          if(groundSensor.overlapping(walkable)){
+          shooter[i].changeAni('shooterIdle');
+      } else {
+          shooter[i].changeAni('idleUp');}} 
+
+        //handling bullet
         enemyProjectile = new Sprite(shooter[i].x-80,shooter[i].y-50,25)
         enemyProjectile.img = 'assets/bullet.png';
         enemyProjectile.mirror.x = true;
         revShot.play(0,1,0.2);
         enemyProjectile.mass = 0;
         enemyProjectiles.push(enemyProjectile);
-        if(player.colliding(floorTile)){
-            shooter[i].changeAni(['shoot','idle']);  
+
+         //Shooting animations
+        if(groundSensor.overlapping(walkable)){
+            shooter[i].changeAni(['shoot','shooterIdle']);  
 
             enemyProjectile.moveTo(-1500,200,50);
         } else {
@@ -734,6 +744,10 @@ bg2x = -player.x / 8
         }, 2000);
     }
    }
+   //enemy animations
+    shooter.mirror.x = true;
+    shooter.anis.offset.y=-30;
+
 
    //player projectiles hit enemy
    for(let i = 0; i < projectiles.length; i++){
