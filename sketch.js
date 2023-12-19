@@ -644,6 +644,7 @@ bg2x = (-player.x / 8) -200;
                     projectile.mass = 0;
                     ammo--;
                     projectiles.push(projectile);
+                    //projectile.debug = true;
                     projectile.moveTowards(mouse.x,mouse.y,0.1);
                     shakeTheScreen();
                 }
@@ -677,32 +678,39 @@ bg2x = (-player.x / 8) -200;
                 }
 
                 //deflect bullet
-                //for(let i = 0; i < enemyProjectiles.length; i++){
-                   // if(enemyProjectiles[i].x - player.x > 0 && enemyProjectiles[i].x - player.x <=250){
-                    //    enemyProjectiles[i].remove();
-                    //    projectile = new Sprite(arm.x+90,arm.y+15,25);
-                    //    projectile.img = 'assets/bullet.png'
-                        //projectile.rotation = mouse.y/8+20;          
-                    //    deflect1.play(0,1,0.1);
-                    //    deflect2.play(0,1,0.6);
-
-                    //   projectile.mass = 0;
-                    //    projectiles.push(projectile);
-                    //    projectile.moveTowards(mouse.x,mouse.y,0.1);
-                    //    shakeTheScreen();
-                    //    console.log("deflect");
-                    //} else if(enemyProjectiles[i].x - player.x < 0 && enemyProjectiles[i].x - player.x >= -250){
-                    //    enemyProjectiles[i].remove();
-                    //    projectile = new Sprite(arm.x-90,arm.y+15,25);
-                    //    projectile.img = 'assets/bullet.png'
-                    //   //projectile.rotation = mouse.y/8+20;          
-                    //    deflect1.play(0,1,0.1);
-                    //    deflect2.play(0,1,0.6);
-                    //    projectile.mass = 0;
-                    //    projectiles.push(projectile);
-                    //    projectile.moveTowards(mouse.x,mouse.y,0.05);
-                    //    shakeTheScreen();
-                    //    console.log("deflect"); }}
+                
+                for(let i = 0; i < enemyProjectiles.length; i++){
+                    for(let j = 0; j < shooter.length; j++){
+                        if(!player.colliding(shooter) && enemyProjectiles[i].x - player.x > 0 && enemyProjectiles[i].x - player.x <=250){
+                            //projectile = new Sprite(arm.x+90,arm.y+15,25);
+                            //projectile.debug = true;
+                            //projectile.img = 'assets/bullet.png'
+                             //projectile.rotation = mouse.y/8+20;          
+                            deflect1.play(0,1,0.1);
+                            deflect2.play(0,1,0.6);
+     
+                           //projectile.mass = 0;
+                            //projectiles.push(projectile);
+                            enemyProjectiles[i].moveTowards(mouse.x,mouse.y,0.1);
+                            shakeTheScreen();
+                            enemyProjectiles[i].remove();
+                            console.log("deflect");
+                         } else if(!player.colliding(shooter) && enemyProjectiles[i].x - player.x < 0 && enemyProjectiles[i].x - player.x >= -250){
+                            enemyProjectiles[i].remove();
+                            //projectile = new Sprite(arm.x-90,arm.y+15,25);
+                            //projectile.img = 'assets/bullet.png'
+                           //projectile.rotation = mouse.y/8+20;          
+                            deflect1.play(0,1,0.1);
+                            deflect2.play(0,1,0.6);
+                            //projectile.mass = 0;
+                            //projectiles.push(projectile);
+                            enemyProjectiles[i].moveTowards(mouse.x,mouse.y,0.05);
+                            shakeTheScreen();
+                            console.log("deflect"); }
+                    }
+                   
+                }
+                
 
                 //melee an enemy
                // if(arm.collides()){
@@ -863,7 +871,8 @@ bg2x = (-player.x / 8) -200;
           shooter[i].changeAni('idleUp');}} 
 
         //handling bullet
-        enemyProjectile = new Sprite(shooter[i].x-80,shooter[i].y-50,25)
+        enemyProjectile = new Sprite(shooter[i].x-80,shooter[i].y-50,25);
+        //enemyProjectile.debug = true;
         enemyProjectile.img = 'assets/bullet.png';
         enemyProjectile.mirror.x = true;
         revShot.play(0,1,0.2);
@@ -894,16 +903,29 @@ bg2x = (-player.x / 8) -200;
 
     //drop gun when right mouse button clicked
     if(revolverEquipped && mouse.right > 1 && mouse.right < 10){
-        thrownRev = new Sprite(player.x+50,player.y-50);
-        thrownRev.collider = "dynamic";
-        thrownRev.img = "assets/revolver.png";
-        arm.img = "assets/Arm.png";
-        thrownRev.scale = 0.5;
-        thrownRev.width = 50;
-        thrownRev.height = 25;
-        thrownRev.moveTowards(mouse.x,mouse.y,0.05);
-        thrownRev.rotation = 60;
-        revolverEquipped = false;
+        if(mouse.x > player.x){
+            thrownRev = new Sprite(player.x+50,player.y-50);
+            thrownRev.collider = "dynamic";
+            thrownRev.img = "assets/revolver.png";
+            arm.img = "assets/Arm.png";
+            thrownRev.scale = 0.5;
+            thrownRev.width = 50;
+            thrownRev.height = 25;
+            thrownRev.moveTowards(mouse.x,mouse.y,0.05);
+            thrownRev.rotation = 60;
+            revolverEquipped = false;
+        } else {
+            thrownRev = new Sprite(player.x-50,player.y-50);
+            thrownRev.collider = "dynamic";
+            thrownRev.img = "assets/revolver.png";
+            arm.img = "assets/Arm.png";
+            thrownRev.scale = 0.5;
+            thrownRev.width = 50;
+            thrownRev.height = 25;
+            thrownRev.moveTowards(mouse.x,mouse.y,0.05);
+            thrownRev.rotation = 60;
+            revolverEquipped = false;
+        }
         
     }
     
