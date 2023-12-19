@@ -52,10 +52,10 @@ let floorTile;
 let walkable;
 let tileSize = 200;
 let groundSensor;
-
+let songChance;
 //backgrounds
-let bg1x = 0;
-let bg2x = 0;
+let bg1x = -200;
+let bg2x = -200;
 let tutorialOverlay = false;
 //fonts
 let helsing;
@@ -63,6 +63,27 @@ let testa;
 
 //respawn the player at start point function
 function respawnPlayer(){
+    //reloads webpage 
+    location.reload();
+//if using reload webpage, eveything below is redundant
+//resets map
+//tileMap.remove();
+//tileMap = new Tiles(
+ //   [
+//    'aa............................................................',
+//    'aa............................................................',
+ //   'aa............................................................',
+ //   'aa.................................................r.....s....',
+ //   'aa..........r.....g......s.....................r..bb...s.b.bbb',
+ //   'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+//], -700,
+//    -380,
+ //   floorTile.w,
+ //   floorTile.h,
+//);
+
+
+
     //delete floating objects if existing
     if(projectiles.length!=0){
         projectiles = [];
@@ -89,11 +110,12 @@ function preload() {
     swing = loadSound('assets/swing.flac');
     swordImpact = loadSound('assets/swordimpact.wav');
     deflect1 = loadSound('assets/deflect1.wav');
-    deflect2 = loadSound('assets/deflect1.wav');
+    deflect2 = loadSound('assets/deflect2.wav');
     menuMusic = loadSound('assets/menu.mp3');
     roll = loadSound('assets/roll.wav');
     healthPickup = loadSound('assets/healthpack.wav');
-
+    crystals = loadSound('assets/crystals.mp3');
+    sweeper = loadSound('assets/sweeper.mp3');
 
     //images
     bg1 = loadImage('assets/1.png');
@@ -104,6 +126,7 @@ function preload() {
     floorIMG = loadImage('assets/floor.png');
     healthPackIMG = loadImage('assets/HealthPickup.png');
     boxIMG = loadImage('assets/box.png');
+    gateIMG = loadImage('assets/gate.png');
 
     //fonts
     helsing = loadFont('assets/vanhelsing.ttf');
@@ -128,12 +151,22 @@ function preload() {
     healthPack.rotationLock = true;
     healthPack.anis.offset.y=29
 
+
+    //revolver group
+    rev = new Group();
+    rev.img = "assets/revolverGlow.png";
+    rev.scale = 0.5;
+    rev.width = 50;
+    rev.height = 25;
+    rev.ammo = 6;
+    rev.tile = "g";
+    rev.collider = "dynamic";
+
   }
 
 //set up function
 function setup(){
-    //music
-    //menuMusic.play(0,1,0.2);
+
     //set up canvas and world settings
     new Canvas(1920,1080, 'pixelated x1');
     noStroke();
@@ -165,9 +198,11 @@ function setup(){
     runner.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});
     runner.anis.offset.y=-27
 
+
+
     //shooter enemy
     shooter = new Group();
-    shooter.debug = true;
+    shooter.debug = false;
     shooter.rotationLock = true;
     shooter.collider = "dynamic"; 
     shooter.width = 60;
@@ -189,6 +224,8 @@ function setup(){
     shooter.addAni('headshotDone','assets/headshotdone.png',{frameSize:[256,256], frames: 1});  
 
 
+    runner.overlaps(shooter);
+
     //enemySpawned = true;
 
 
@@ -196,14 +233,6 @@ function setup(){
     // arm.overlaps(shooter);
     // player.overlaps(shooter);
 
-    //revolver group
-    rev = new Group();
-    rev.img = "assets/revolver.png";
-    rev.scale = 0.5;
-    rev.width = 50;
-    rev.height = 25;
-    rev.ammo = 6;
-    rev.tile = "g";
 
     walkable = new Group();
     walkable.layer =1;
@@ -224,14 +253,23 @@ function setup(){
     boxTile.bounciness = 0;
     boxTile.image = boxIMG;
 
+    gate = new Group();
+    gate.w = 200
+    gate.h = 400;
+    gate.tile = "w";
+    gate.collider = 'static';
+    gate.bounciness = 0;
+    gate.image = gateIMG;
+
+
     tileMap = new Tiles(
         [
-        'aa.................................................................................................................................................',
-        'aa.................................................................................................................................................',
-        'aa.................................................................................................................................................',
-        'aa.................................................................................................................................................',
-        'aa.h.h.b..r.r.....g......s....s..g..r..............................................................................................................',
-        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        '..............................................................',
+        '..............................h.......h................s......',
+        '.........................sg..............s...........s.b......',
+        '................g......s.bbb.....sbbr....b.........s.bsb....w.',
+        'rr..........rrrsb.rrrrrbbbbbrrrrsbbbbgsbsbrrrrrhsgsbsbbbr..s..',
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     ], -700,
         -380,
         floorTile.w,
@@ -245,21 +283,36 @@ function setup(){
     player.rotationLock = true;
     player.bounciness = 0;        
     player.friction = 0;
+    player.drag = 0;
     //player.debug = true;
         //movement fix
     groundSensor = new Sprite(player.x, player.y + player.y/2, player.w,1)
     groundSensor.visible = false;
     groundSensor.mass = 0.1;
+    groundSensor.overlaps(walkable);
+    groundSensor.overlaps(runner);
+
     let joint = new GlueJoint(player,groundSensor);
     joint.visible = false;
-        //removes healthpacks
+        //healthpack pickup
     player.overlaps(healthPack, (p,c) =>{
         c.remove();
         playerHealth++;
-        healthPickup.play(0,1,0.2);
-
+        healthPickup.play(0,1,0.6);
+        //rev pickup
     })
-
+    player.overlaps(rev, (p,c) =>{
+        c.remove();
+        ammo=6;
+        revolverEquipped = true;
+        swordEquipped = false;
+        pickup.play(0,1,1);
+        arm.img = 'assets/RevolverArm.png';
+    })
+        //win condition
+    player.overlaps(gate,(p,g)=>{
+        gameWon=true;
+    })
     //player arm
     arm = new Sprite(player.x,player.y,20,20);
     arm.collider ="dynamic";
@@ -292,6 +345,9 @@ function setup(){
     //floor.bounciness = 0;
     //floor.visible = true;
    //floor.color = 20;
+
+       //music
+       menuMusic.play(0,1,0.2);
 }
 
 function moveCamera(){
@@ -319,13 +375,23 @@ function isMouseInsideText(message, messageX, messageY) {
   }
   function mouseClicked() {
     if (isMouseInsideText(play, playX, playY)) {
-    if(gameStart == false){  pickup.play(0,1,0.5,0.2);}
-      gameStart = true;
-      
+    if(gameStart == false){  
+        pickup.play(0,1,0.5,0.2);
+        songChance = random(0,100);
+        if (songChance > 50){
+            crystals.play(0,1,0.5,0.2);
+
+        }else{
+            sweeper.play(0,1,0.5,0.15);
+
+        }
+    }
+        gameStart = true;
     }
     if (isMouseInsideText(tut, tutX, tutY)) {
         tutorialOverlay = true;
-        if(gameStart == false){ pickup.play(0,1,0.5,0.2);}
+        if(gameStart == false){ 
+            pickup.play(0,1,0.5,0.2);}
   }
 }
   
@@ -343,8 +409,8 @@ function draw(){
     clear();
 //background
 image(bg3,0,0);
-image(bg2, bg2x, 0);
-image(bg1, bg1x, 0);
+image(bg2, bg2x, 210);
+image(bg1, bg1x, 220);
 
 if (gameStart == false){
     //main menu
@@ -352,6 +418,8 @@ if (gameStart == false){
     camera.y = -100;
     arm.x = player.x + 2;
     arm.y = player.y - 53;
+    
+    //music
 
     //text
     drawingContext.shadowColor = color(252, 0, 3);
@@ -400,6 +468,7 @@ if (tutorialOverlay == true){
     player.visible = false;
     arm.visible = false;
     if(mouse.presses()){
+        pickup.play(0,1,0.5,0.2);
         tutorialOverlay = false;
     }
     
@@ -409,12 +478,18 @@ if (tutorialOverlay == true){
     arm.visible = true;
 }
 
+//IF GAME IS ACTIVE /////////////////////////////////////////////////////////////////////////////////////////
 } else if (gameStart == true){
+menuMusic.stop()
+if(gameWon == true){
+    textSize(125);
+    text("You Have Won!",500,150);
+    textSize(75);
+    text("Press R To Restart",600,250);
+}
 
-
-
-bg1x = -player.x / 4
-bg2x = -player.x / 8
+bg1x = (-player.x / 4) -200;
+bg2x = (-player.x / 8) -200;
 
 
     //shake the screen
@@ -425,7 +500,9 @@ bg2x = -player.x / 8
         if(player.y > 1080/2+200 || playerIsDead){
             //handle player death
             playerIsDead = true;
-            gameWon = false;
+            player.collider = "none";
+            player.vel.x = 0;
+
             setTimeout(() => {
                 //reset camera when player falls off level
                 //camera.x = 600;
@@ -437,7 +514,8 @@ bg2x = -player.x / 8
                 text("You Have Died",500,150);
                 textSize(75);
                 text("Press R To Restart",600,250);
-            }   
+            }
+            
         } else{
             //adjust camera to follow player
             camera.x = player.x+600;
@@ -549,7 +627,7 @@ bg2x = -player.x / 8
         if(player.ani.name != 'roll'){
 
             if(revolverEquipped){
-                if(mouse.presses() && ammo > 0 && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
+                if(mouse.presses() && ammo > 0 && !player.mouse.hovering() && ((mouse.x > player.x+4 || mouse.x < player.x-4) || (mouse.y<player.y-150))){
                     if (mouse.x > player.x){
                         projectile = new Sprite(arm.x+90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
@@ -566,58 +644,65 @@ bg2x = -player.x / 8
                     projectile.mass = 0;
                     ammo--;
                     projectiles.push(projectile);
-                    projectile.moveTowards(mouse.x,mouse.y,50);
+                    projectile.moveTowards(mouse.x,mouse.y,0.1);
                     shakeTheScreen();
+                }
+                if(mouse.presses() && ammo <= 0){
+                    pickup.play(0,1,0.2);
                 }
             } else {
             //melee
-            if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
+            if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+4 || mouse.x < player.x-4) || (mouse.y<player.y-150))){
                 arm.changeAni(['melee', 'armIdle']);
                 swing.play(0,1,0.2);
                 //check if player hits enemy
                 for(let i = 0; i < runner.length; i++){
-                    if(player.x - runner[i].x <= 200 && player.x - runner[i].x >= -200 && player.y >= runner[i].y-30){
-                        killSound.play(0,1,0.5);
+                    if(!runner[i].dead && player.x - runner[i].x <= 200 && player.x - runner[i].x >= -200 && player.y >= runner[i].y-30){
+                        killSound.play(0,1,0.1);
+                        swordImpact.play(0,1,0.5);
                         runner[i].changeAni(['headshot','headshotDone']);
-                        setTimeout(() => {
-                            runner[i].remove();
-                        }, 1000);
+                        runner[i].dead = true;
+                        runner[i].collider = "none";
+                        runner[i].vel.x = 0;
                     }
                 }
                 for(let i = 0; i < shooter.length; i++){
-                    if(player.x - shooter[i].x <= 200 && player.x - shooter[i].x >= -200 && player.y >= shooter[i].y-30){
-                        killSound.play(0,1,0.5);
+                    if(!shooter[i].dead && player.x - shooter[i].x <= 200 && player.x - shooter[i].x >= -200 && player.y >= shooter[i].y-30){
+                        killSound.play(0,1,0.1);
+                        swordImpact.play(0,1,0.5);
                         shooter[i].changeAni(['headshot','headshotDone']);
-                        setTimeout(() => {
-                            shooter[i].remove();
-                        }, 1000);
+                        shooter[i].dead = true;
+                        shooter[i].collider = "none";
                     }
                 }
 
                 //deflect bullet
-                for(let i = 0; i < enemyProjectiles.length; i++){
-                    if(enemyProjectiles[i].x - player.x > 0 && enemyProjectiles[i].x - player.x <=150){
-                        enemyProjectiles[i].remove();
-                        projectile = new Sprite(arm.x+90,arm.y+15,25);
-                        projectile.img = 'assets/bullet.png'
+                //for(let i = 0; i < enemyProjectiles.length; i++){
+                   // if(enemyProjectiles[i].x - player.x > 0 && enemyProjectiles[i].x - player.x <=250){
+                    //    enemyProjectiles[i].remove();
+                    //    projectile = new Sprite(arm.x+90,arm.y+15,25);
+                    //    projectile.img = 'assets/bullet.png'
                         //projectile.rotation = mouse.y/8+20;          
-                        revShot.play(0,1,0.2);
-                        projectile.mass = 0;
-                        projectiles.push(projectile);
-                        projectile.moveTowards(mouse.x,mouse.y,50);
-                        shakeTheScreen();
-                    } else if(enemyProjectiles[i].x - player.x < 0 && enemyProjectiles[i].x - player.x >= -150){
-                        enemyProjectiles[i].remove();
-                        projectile = new Sprite(arm.x-90,arm.y+15,25);
-                        projectile.img = 'assets/bullet.png'
-                        //projectile.rotation = mouse.y/8+20;          
-                        revShot.play(0,1,0.2);
-                        projectile.mass = 0;
-                        projectiles.push(projectile);
-                        projectile.moveTowards(mouse.x,mouse.y,50);
-                        shakeTheScreen();
-                    }
-                }
+                    //    deflect1.play(0,1,0.1);
+                    //    deflect2.play(0,1,0.6);
+
+                    //   projectile.mass = 0;
+                    //    projectiles.push(projectile);
+                    //    projectile.moveTowards(mouse.x,mouse.y,0.1);
+                    //    shakeTheScreen();
+                    //    console.log("deflect");
+                    //} else if(enemyProjectiles[i].x - player.x < 0 && enemyProjectiles[i].x - player.x >= -250){
+                    //    enemyProjectiles[i].remove();
+                    //    projectile = new Sprite(arm.x-90,arm.y+15,25);
+                    //    projectile.img = 'assets/bullet.png'
+                    //   //projectile.rotation = mouse.y/8+20;          
+                    //    deflect1.play(0,1,0.1);
+                    //    deflect2.play(0,1,0.6);
+                    //    projectile.mass = 0;
+                    //    projectiles.push(projectile);
+                    //    projectile.moveTowards(mouse.x,mouse.y,0.05);
+                    //    shakeTheScreen();
+                    //    console.log("deflect"); }}
 
                 //melee an enemy
                // if(arm.collides()){
@@ -690,21 +775,21 @@ bg2x = -player.x / 8
 
    //runner enemy runs to player when in range
    for(let i = 0; i < runner.length; i++){
-    if(!runner.dead && (runner[i].x - player.x <= 1600 || player.x - runner[i].x <= 1600)){
-        runner[i].moveTo(player.x,194,3);  
+    if(player.ani.name != 'deathDone' && player.ani.name != 'death' && !runner[i].dead && (runner[i].x - player.x < 1500)){
         if(runner[i].x > player.x){
             runner[i].mirror.x = true;
+            runner[i].moveTo(player.x,194,5);  
         } else {
             runner[i].mirror.x = false;
+            runner[i].moveTo(player.x,194,5);  
         }
+
     } 
-
-
 
     
     //deal with player and runner collision
     //decrement health and give 1 second grace period before next hit
-    if(!runner.dead && runner[i].collides(player) && !playerHurt){
+    if(player.ani.name != 'roll' && !runner.dead && runner[i].collides(player) && !playerHurt){
         playerHurt = true;
         shakeTheScreen();
         damaged.play(0,1,0.5);
@@ -728,24 +813,51 @@ bg2x = -player.x / 8
     for(let j = 0; j < projectiles.length; j++){
         if(projectiles[j].collides(runner[i])){
             //runner death
-            runner.dead = true;
+            runner[i].dead = true;
             projectiles[j].remove();
-            killSound.play(0,1,0.5);
+            killSound.play(0,1,0.1);
+            swordImpact.play(0,1,0.5);
             runner[i].changeAni(['headshot','headshotDone']);
+            runner[i].collider = "none";
+            runner[i].vel.x = 0;
             setTimeout(() => {
-                runner[i].remove();
             }, 1000);
+        }
+        if(projectiles[j].y<-650 || projectiles[j].y>=750){
+            projectiles[j].remove();
+        } 
+        if(projectiles[j].overlaps(walkable)){
+            projectiles[j].remove();
         }
     }
    }
 
 
+   //player projectiles hit shooter
+   for(let i = 0; i < projectiles.length; i++){
+    for(let j = 0; j < shooter.length; j++){
+        if(shooter[j].dead == false && projectiles[i].collides(shooter[j])){
+            projectiles[i].remove();
+            killSound.play(0,1,0.1);
+            swordImpact.play(0,1,0.5);
+            shooter[j].changeAni(['headshot','headshotDone']);
+            shooter[j].dead = true;
+            shooter[j].collider = "none";
+        }
+        if(projectiles[i].y<-650 || projectiles[i].y>=750){
+            projectiles[i].remove();
+        } 
+        if(projectiles[i].overlaps(walkable)){
+            projectiles[i].remove();
+        }
+    }
+}
    //enemy shooting
    for(let i = 0; i < shooter.length; i++){
     //shooter shoots at player when in range
-    if(shooter[i].x - player.x <= 1600 && shooter[i].dead === false && shooter[i].canShoot === true && !playerIsDead){
+    if(shooter[i].x - player.x <= 1600 && shooter[i].dead == false && shooter[i].canShoot === true && !playerIsDead){
           if (shooter[i].canShoot === false){
-          if(groundSensor.overlapping(walkable)){
+          if(groundSensor.overlapping(floorTile)){
           shooter[i].changeAni('shooterIdle');
       } else {
           shooter[i].changeAni('idleUp');}} 
@@ -759,63 +871,26 @@ bg2x = -player.x / 8
         enemyProjectiles.push(enemyProjectile);
 
          //Shooting animations
-        if(groundSensor.overlapping(walkable)){
+        if(groundSensor.overlapping(floorTile)){
             shooter[i].changeAni(['shoot','shooterIdle']);  
 
-            enemyProjectile.moveTo(-1500,200,50);
+            enemyProjectile.moveTo(-1500,-500,25);
         } else {
             shooter[i].changeAni(['shootUp','idleUp']);  
-            enemyProjectile.moveTo(-500,-1000,50);
+            enemyProjectile.moveTo(-500,-1000,25);
         }
         
         shooter[i].canShoot = false;
         
         setTimeout(() => {
             shooter[i].canShoot = true;
-        }, 2000);
+        }, 3000);
     }
    }
    //enemy animations
     shooter.mirror.x = true;
     shooter.anis.offset.y=-30;
 
-
-   //player projectiles hit shooter
-   for(let i = 0; i < projectiles.length; i++){
-    for(let j = 0; j < shooter.length; j++){
-        if(projectiles[i].collides(shooter[j])){
-            //runner death
-            shooter.dead = true;
-            projectiles[i].remove();
-            killSound.play(0,1,0.5);
-            shooter[j].changeAni(['headshot','headshotDone']);
-            setTimeout(() => {
-                shooter[j].remove();
-            }, 1000);
-        }
-        if(projectiles[i].y<-650 || projectiles[i].y>=750){
-            projectiles[i].remove();
-        } 
-        if(projectiles[i].collides(floorTile)){
-            projectiles[i].remove();
-        }
-    }
-}
-
-    //pick up revolver when touched
-    for(let i = 0; i < rev.length; i++){
-        if(!revolverEquipped && player.colliding(rev)){
-            ammo = 6;
-            rev.collider = "dynamic";           
-            revolverEquipped = true;
-            swordEquipped = false;
-            rev[i].remove();
-            pickup.play(0,1,1);
-            arm.img = 'assets/RevolverArm.png';
-        } else {
-            rev.collider = "dynamic";
-        }
-    }
 
     //drop gun when right mouse button clicked
     if(revolverEquipped && mouse.right > 1 && mouse.right < 10){
@@ -826,7 +901,8 @@ bg2x = -player.x / 8
         thrownRev.scale = 0.5;
         thrownRev.width = 50;
         thrownRev.height = 25;
-        thrownRev.moveTowards(mouse.x,mouse.y,25);
+        thrownRev.moveTowards(mouse.x,mouse.y,0.05);
+        thrownRev.rotation = 60;
         revolverEquipped = false;
         
     }
@@ -837,21 +913,23 @@ bg2x = -player.x / 8
         }
         for(let i = 0; i < runner.length; i++){
             if(thrownRev.collides(runner[i])){
-                killSound.play(0,1,0.5);
+                killSound.play(0,1,0.1);
+                swordImpact.play(0,1,0.5);
                 runner[i].changeAni(['headshot','headshotDone']);
-                setTimeout(() => {
-                    runner[i].remove();
-                }, 1000);
+                runner[i].dead = true;
+                runner[i].collider = "none";
+                runner[i].vel.x = 0;
                 thrownRev.remove();
             }
         }
         for(let i = 0; i < shooter.length; i++){
             if(thrownRev.collides(shooter[i])){
-                killSound.play(0,1,0.5);
+                killSound.play(0,1,0.1);
+                swordImpact.play(0,1,0.5);
                 shooter[i].changeAni(['headshot','headshotDone']);
-                setTimeout(() => {
-                    shooter[i].remove();
-                }, 1000);
+                shooter[i].dead = true;
+                shooter[i].collider = "none";
+                shooter[i].vel.x = 0;
                 thrownRev.remove();
             }
         }
