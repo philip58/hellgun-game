@@ -18,6 +18,7 @@ let revolver;
 let revolverEquipped = false;
 let swordEquipped = true;
 let thrownRev;
+let ammo = 6;
 
 //player projectile variables
 let projectile;
@@ -548,7 +549,7 @@ bg2x = -player.x / 8
         if(player.ani.name != 'roll'){
 
             if(revolverEquipped){
-                if(mouse.presses() && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
+                if(mouse.presses() && ammo > 0 && !player.mouse.hovering() && ((mouse.x > player.x+80 || mouse.x < player.x-80) || (mouse.y<player.y-150))){
                     if (mouse.x > player.x){
                         projectile = new Sprite(arm.x+90,arm.y+15,25);
                         projectile.img = 'assets/bullet.png'
@@ -563,6 +564,7 @@ bg2x = -player.x / 8
                         revShot.play(0,1,0.2);
                     }
                     projectile.mass = 0;
+                    ammo--;
                     projectiles.push(projectile);
                     projectile.moveTowards(mouse.x,mouse.y,50);
                     shakeTheScreen();
@@ -678,7 +680,7 @@ bg2x = -player.x / 8
     textFont('helsing');
 
     //debug text
-    text("player X: " + int(player.x) + " player Y: " + int(player.y), 100,40)
+    //text("player X: " + int(player.x) + " player Y: " + int(player.y), 100,40)
 
     //health 
     if(playerIsDead == false){
@@ -803,10 +805,11 @@ bg2x = -player.x / 8
     //pick up revolver when touched
     for(let i = 0; i < rev.length; i++){
         if(!revolverEquipped && player.colliding(rev)){
+            ammo = 6;
             rev.collider = "dynamic";           
             revolverEquipped = true;
             swordEquipped = false;
-            rev.remove();
+            rev[i].remove();
             pickup.play(0,1,1);
             arm.img = 'assets/RevolverArm.png';
         } else {
@@ -852,6 +855,12 @@ bg2x = -player.x / 8
                 thrownRev.remove();
             }
         }
+    }
+
+    if(revolverEquipped){
+        textSize(60);
+        textStyle(BOLD);
+        text(ammo + "/6", 250,180);
     }
 
 }
